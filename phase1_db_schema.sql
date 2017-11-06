@@ -20,8 +20,11 @@ CREATE TABLE profile(
 
 --Stores the friends lists for every user in the system. The JDate is when they became friends,
 --and the message is the message of friend request
+--for now, only planning on storing one tuple per set of friends where the person who requested the friendship is userID1 and the person who accpeted is userID2
+--  pros, only have to store once
+--  cons, will this be a problem for later queries?
 CREATE TABLE friends(
-  userID1 varchar2(20) NOT NULL,
+  userID1 varchar2(20) NOT NULL,    
   userID2 varchar2(20) NOT NULL,
   JDate date,
   message varchar2(200),
@@ -32,7 +35,7 @@ CREATE TABLE friends(
 CREATE TABLE pendingFriends(
   fromID varchar2(20) NOT NULL,
   toID varchar2(20) NOT NULL,
-  message varchar2(200)
+  message varchar2(200),
   CONSTRAINT pendingFriends_PK PRIMARY KEY (fromID,toID)
 );
 
@@ -71,7 +74,7 @@ CREATE TABLE groups(
 CREATE TABLE groupMembership(
   gID varchar2(20) NOT NULL,
   userID varchar2(20) NOT NULL,
-  role varchar2(20),
+  role varchar2(20), --only certain people with certain role can accept?
   CONSTRAINT groupMembership_PK PRIMARY KEY (gID),
   CONSTRAINT groupMembership_FK1 FOREIGN KEY (gID) REFERENCES groups(gID),
   CONSTRAINT groupMembership_FK2 FOREIGN KEY (userID) REFERENCES profile(userID)
@@ -87,3 +90,51 @@ CREATE TABLE pendingGroupmembers(
   CONSTRAINT pendingGroupmembers_FK1 FOREIGN KEY (gID) REFERENCES groups(gID),
   CONSTRAINT pendingGroupmembers_FK2 FOREIGN KEY (userID) REFERENCES profile(userID)
 );
+
+-----TRIGGERS
+--After a message is sent, if it is sent to a single user (not a group), then add that user to the messageRecipient table.
+CREATE OR REPLACE TRIGGER recipientsTrigger
+AFTER INSERT ON messages
+FOR EACH ROW
+BEGIN
+    IF :new.toUserID IS NOT NULL THEN
+    INSERT INTO messageRecipient VALUES
+        (
+            :new.msgID,
+            :new.toUserID
+        );
+    END IF;
+END;
+/
+
+--When a new entry is added to the friends table, first ensure that they were in pending friends and then remove from the pending friends table.
+CREATE OR REPLACE TRIGGER newFriendTrigger
+BEFORE INSERT ON friends
+FOR EACH ROW
+DECLARE
+    v_count NUMBER;
+BEGIN
+    SELECT COUNT(*) INTO v_count FROM pendingFriends p WHERE :new.userID1=p.fromID AND :new.userID2=p.toID;
+    IF v_count > 0 THEN
+    	DELETE FROM pendingFriends p WHERE :new.userID1=p.fromID AND :new.userID2=p.toID;
+    --ELSE 
+    --    ROLLBACK TRANSACTION; --this person cannot be added as they were not a pending friend
+    END IF;
+END;
+/
+
+--When a new entry is added to the group members table, first ensure that they were in the pending group members table and then remove from the pending group members table
+CREATE OR REPLACE TRIGGER newGroupMemberTrigger
+BEFORE INSERT ON groupMembership
+FOR EACH ROW
+DECLARE
+    v_count NUMBER;
+BEGIN
+   SELECT COUNT(*) INTO v_count FROM pendingGroupmembers p WHERE :new.gID=p.gID AND :new.userID=p.userID;
+   IF v_count > 0 THEN  
+   	DELETE FROM pendingGroupmembers p WHERE :new.gID=p.gID AND :new.userID=p.userID;
+   --ELSE 
+   --	ROLLBACK TRANSACTION; --this person cannot be added as they were not a pending group member
+   END IF;
+END;
+/
