@@ -1,94 +1,86 @@
----DROP ALL TABLES TO MAKE SURE THE SCHEMA IS CLEAR
-DROP TABLE profile CASCADE CONSTRAINTS;
-DROP TABLE friends CASCADE CONSTRAINTS;
-DROP TABLE pendingFriends CASCADE CONSTRAINTS;
-DROP TABLE messages CASCADE CONSTRAINTS;
-DROP TABLE messageRecipient CASCADE CONSTRAINTS;
-DROP TABLE groups CASCADE CONSTRAINTS;
-DROP TABLE groupMembership CASCADE CONSTRAINTS;
-DROP TABLE pendingGroupmembers CASCADE CONSTRAINTS;
-
 --Stores the profile and login information for each user registered in the system
 CREATE TABLE profile(
-  userID varchar2(20) NOT NULL,
+  userID varchar2(20) NOT NULL NOT DEFERRABLE,
   name varchar2(50),
   password varchar2(50),
   date_of_birth date,
   lastlogin timestamp,
-  CONSTRAINT profile_PK PRIMARY KEY (userID)
+  CONSTRAINT profile_PK PRIMARY KEY (userID) INITIALLY IMMEDIATE -- new profile can't be created with an already existing ID and userIDs shouldn't change
 );
 
 --Stores the friends lists for every user in the system. The JDate is when they became friends,
 --and the message is the message of friend request
---for now, only planning on storing one tuple per set of friends where the person who requested the friendship is userID1 and the person who accpeted is userID2
---  pros, only have to store once
---  cons, will this be a problem for later queries?
 CREATE TABLE friends(
-  userID1 varchar2(20) NOT NULL,    
-  userID2 varchar2(20) NOT NULL,
+  userID1 varchar2(20) NOT NULL NOT DEFERRABLE,
+  userID2 varchar2(20) NOT NULL NOT DEFERRABLE,
   JDate date,
   message varchar2(200),
-  CONSTRAINT friends_PK PRIMARY KEY (userID1,userID2)
+  CONSTRAINT friends_PK PRIMARY KEY (userID1,userID2) INITIALLY IMMEDIATE --should only be one relation between 2 ID's
+  CONSTRAINT friends_FK1 FOREIGN KEY (userID1) REFERENCES profile (userID) INITIALLY IMMEDIATE, --the user id should reference a profile in order to create a friendship
+  CONSTRAINT friends_FK2 FOREIGN KEY (userID2) REFERENCES profile (userID) INITIALLY IMMEDIATE -- same as friends_FK1
 );
 
 --Stores pending friends requests that have yet to be confirmed by the recipient of the request.
 CREATE TABLE pendingFriends(
-  fromID varchar2(20) NOT NULL,
-  toID varchar2(20) NOT NULL,
-  message varchar2(200),
-  CONSTRAINT pendingFriends_PK PRIMARY KEY (fromID,toID)
+  fromID varchar2(20) NOT NULL NOT DEFERRABLE,
+  toID varchar2(20) NOT NULL NOT DEFERRABLE,
+  message varchar2(200)
+  CONSTRAINT pendingFriends_PK PRIMARY KEY (fromID,toID) INITIALLY IMMEDIATE, --both users should exist in order to create a friendship request
+  CONSTRAINT pendingFriends_FK1 FOREIGN KEY (fromID) REFERENCES profile (userID) INITIALLY IMMEDIATE, --the user id should reference a profile in order to create a friend request
+  CONSTRAINT pendingFriends_FK2 FOREIGN KEY (toID) REFERENCES profile (userID) INITIALLY IMMEDIATE --same as pendingFriends_FK1
 );
 
 --Stores every message sent by users in the system. Note that the default values of ToUserID
 --and ToGroupID should be NULL
 CREATE TABLE messages(
   msgID varchar2(20) NOT NULL,
-  fromID varchar2(20) NOT NULL,
+  fromID varchar2(20) NOT NULL NOT DEFERRABLE,
   message varchar2(200),
   toUserID varchar2(20) DEFAULT NULL,
   toGroupID varchar2(20) DEFAULT NULL,
   dateSent date,
-  CONSTRAINT messages_PK PRIMARY KEY (msgID),
-  CONSTRAINT messages_FK FOREIGN KEY (fromID) REFERENCES profile(userID)
+  CONSTRAINT messages_PK PRIMARY KEY (msgID) INITIALLY IMMEDIATE, --Can't duplicate msgIDs
+  CONSTRAINT messages_FK FOREIGN KEY (fromID) REFERENCES profile(userID) INITIALLY IMMEDIATE --fromID should be an existing profile's userID
 );
 
 --Stores the recipients of each message stored in the system
 CREATE TABLE messageRecipient(
-  msgID varchar2(20) NOT NULL,
-  userID varchar2(20) NOT NULL,
-  CONSTRAINT messageRecipient_PK PRIMARY KEY (msgID),
-  CONSTRAINT messageRecipient_FK1 FOREIGN KEY (msgID) REFERENCES messages(msgID),
-  CONSTRAINT messageRecipient_FK2 FOREIGN KEY (userID) REFERENCES profile(userID)
+  msgID varchar2(20) NOT NULL NOT DEFERRABLE,
+  userID varchar2(20) NOT NULL NOT DEFERRABLE,
+  CONSTRAINT messageRecipient_PK PRIMARY KEY (msgID) INITIALLY IMMEDIATE, --Can't duplicate msgIDs
+  CONSTRAINT messageRecipient_FK1 FOREIGN KEY (msgID) REFERENCES messages(msgID) INITIALLY IMMEDIATE, --Must be an existing msgID in messages in order to add to this table
+  CONSTRAINT messageRecipient_FK2 FOREIGN KEY (userID) REFERENCES profile(userID) INITIALLY IMMEDIATE --Must be an existing profile in order to be a recipient
 );
 
 --Stores information for each group in the system
 CREATE TABLE groups(
-  gID varchar2(20) NOT NULL,
-  name varchar2(50),
+  gID varchar2(20) NOT NULL DEFERRABLE,
+  name varchar2(50) NOT NULL, --a group must have a name
   description varchar2(200),
-  CONSTRAINT groups_PK PRIMARY KEY (gID)
+  CONSTRAINT groups_PK PRIMARY KEY (gID) INITIALLY IMMEDIATE DEFERRABLE, --Creation of a group must be a unique ID
+  CONSTRAINT groups_UK UNIQUE(name) INITIALLY IMMEDIATE DEFERRABLE --Group names should be unique
 );
 
 --Stores the users who are members of each group in the system.The ’role’ indicate whether a
 --user is a manager of a group (who can accept joining group request) or not.
 CREATE TABLE groupMembership(
-  gID varchar2(20) NOT NULL,
-  userID varchar2(20) NOT NULL,
-  role varchar2(20), --only certain people with certain role can accept?
-  CONSTRAINT groupMembership_PK PRIMARY KEY (gID),
-  CONSTRAINT groupMembership_FK1 FOREIGN KEY (gID) REFERENCES groups(gID),
-  CONSTRAINT groupMembership_FK2 FOREIGN KEY (userID) REFERENCES profile(userID)
+  gID varchar2(20) NOT NULL NOT DEFERRABLE,
+  userID varchar2(20) NOT NULL NOT DEFERRABLE,
+  role varchar2(20),
+  CONSTRAINT groupMembership_PK PRIMARY KEY (gID, userID), --Can have duplicate gIDs and userIDs, but the pairings must be unique
+  CONSTRAINT groupMembership_FK1 FOREIGN KEY (gID) REFERENCES groups(gID) INITIALLY IMMEDIATE, --Must be an existing gID in groups table
+  CONSTRAINT groupMembership_FK2 FOREIGN KEY (userID) REFERENCES profile(userID) INITIALLY IMMEDIATE --Must be an existing userID in profile table
 );
 
 --Stores pending joining group requests that have yet to be accept/reject by the manager of the
 --group.
 CREATE TABLE pendingGroupmembers(
-  gID varchar2(20) NOT NULL,
-  userID varchar2(20) NOT NULL,
+  gID varchar2(20) NOT NULL NOT DEFERRABLE,
+  userID varchar2(20) NOT NULL NOT DEFERRABLE,
   message varchar2(200),
-  CONSTRAINT pendingGroupmembers_PK PRIMARY KEY (gID),
-  CONSTRAINT pendingGroupmembers_FK1 FOREIGN KEY (gID) REFERENCES groups(gID),
-  CONSTRAINT pendingGroupmembers_FK2 FOREIGN KEY (userID) REFERENCES profile(userID)
+  CONSTRAINT pendingGroupmembers_PK PRIMARY KEY (gID, userID) INITIALLY IMMEDIATE, --Can have duplicate gIDs and userIDs, but the pairings must be unique
+  CONSTRAINT pendingGroupmembers_FK1 FOREIGN KEY (gID) REFERENCES groups(gID) INITIALLY IMMEDIATE, --Must be an existing gID in groups table
+  CONSTRAINT pendingGroupmembers_FK2 FOREIGN KEY (userID) REFERENCES profile(userID) INITIALLY IMMEDIATE --Must be an existing userID in profile table
 );
 
 -----TRIGGERS
@@ -117,7 +109,7 @@ BEGIN
     SELECT COUNT(*) INTO v_count FROM pendingFriends p WHERE :new.userID1=p.fromID AND :new.userID2=p.toID;
     IF v_count > 0 THEN
     	DELETE FROM pendingFriends p WHERE :new.userID1=p.fromID AND :new.userID2=p.toID;
-    --ELSE 
+    --ELSE
     --    ROLLBACK TRANSACTION; --this person cannot be added as they were not a pending friend
     END IF;
 END;
@@ -131,9 +123,9 @@ DECLARE
     v_count NUMBER;
 BEGIN
    SELECT COUNT(*) INTO v_count FROM pendingGroupmembers p WHERE :new.gID=p.gID AND :new.userID=p.userID;
-   IF v_count > 0 THEN  
+   IF v_count > 0 THEN
    	DELETE FROM pendingGroupmembers p WHERE :new.gID=p.gID AND :new.userID=p.userID;
-   --ELSE 
+   --ELSE
    --	ROLLBACK TRANSACTION; --this person cannot be added as they were not a pending group member
    END IF;
 END;
