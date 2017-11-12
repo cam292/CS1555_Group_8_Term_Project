@@ -5,9 +5,10 @@ public class DataCreation{
   public static void main(String[] args){
     try{
       File dataFile = new File("phase1_sample_data.sql");
-      FileWriter dataWriter = new FileWriter(dataFile);
+      FileWriter dataWriter = new FileWriter(dataFile, false);
 
       insertProfiles(dataWriter, 50);
+      dataWriter.close();
     }
     catch(FileNotFoundException e1){
 
@@ -29,9 +30,10 @@ public class DataCreation{
     Random rand = new Random();
     int num = 0;
 
-    StringBuilder query = new StringBuilder("INSERT INTO profile VALUES ('");
+
 
     for(int id=1; id < numProfiles+1; id++){
+      StringBuilder query = new StringBuilder("INSERT INTO profile VALUES ('");
       query.append(id+"', '");
       num = rand.nextInt(firstNames.length); //randomly select a first name
       query.append(firstNames[num]+" ");
@@ -63,7 +65,7 @@ public class DataCreation{
 
       num = rand.nextInt(60); //pick a year from 1910-2010
       num += 1950;
-      System.out.println("Year generated: "+num);
+      // System.out.println("Year generated: "+num);
       query.append(num+"', 'MMM-DD-YY'), TO_TIMESTAMP('");
 
       num = rand.nextInt(29); //just hard code a day less than 28
@@ -91,9 +93,10 @@ public class DataCreation{
 
       System.out.println(query.toString());
       try{
-        writer.append(query.toString()+'\n');
+        System.out.println("trying to write to file");
+        writer.write(query.toString()+'\n');
       } catch(IOException e1){
-
+        System.out.println("Unable to write to file");
       }
       query.delete(0, query.length()-1);
     }
