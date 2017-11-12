@@ -2,12 +2,17 @@ import java.util.*;
 import java.io.*;
 
 public class DataCreation{
+  public static Random rand;
+  public static String[] months = {"JAN", "FEB", "MAR", "APR", "MAY", "JUNE", "JULY", "AUG", "SEP", "OCT", "NOV", "DEC"};
+
   public static void main(String[] args){
+    rand = new Random();
     try{
       File dataFile = new File("phase1_sample_data.sql");
       FileWriter dataWriter = new FileWriter(dataFile, false);
 
-      insertProfiles(dataWriter, 50);
+      // insertProfiles(dataWriter, 100);
+      insertFriends(dataWriter, 100);
       dataWriter.close();
     }
     catch(FileNotFoundException e1){
@@ -25,12 +30,7 @@ public class DataCreation{
 
     String[] lastNames = {"Johnson", "Stevenson", "Sontag", "Cohen", "Blosser", "Aron", "Hanna", "Tepe", "Casper", "Wilson", "Steven", "Gaunt", "Green", "Bolten", "Tyrion", "Stark", "Tyrell", "Cooper", "Shaw", "Rolnick"};
 
-    String[] months = {"JAN", "FEB", "MAR", "APR", "MAY", "JUNE", "JULY", "AUG", "SEP", "OCT", "NOV", "DEC"};
-
-    Random rand = new Random();
     int num = 0;
-
-
 
     for(int id=1; id < numProfiles+1; id++){
       StringBuilder query = new StringBuilder("INSERT INTO profile VALUES ('");
@@ -92,12 +92,12 @@ public class DataCreation{
       }
 
       System.out.println(query.toString());
-      try{
+      // try{
         System.out.println("trying to write to file");
-        writer.write(query.toString()+'\n');
-      } catch(IOException e1){
-        System.out.println("Unable to write to file");
-      }
+        // writer.write(query.toString()+'\n');
+      // } catch(IOException e1){
+      //   System.out.println("Unable to write to file");
+      // }
       query.delete(0, query.length()-1);
     }
 
@@ -117,5 +117,63 @@ public class DataCreation{
     }
 
     return pass.toString();
+  }
+
+  public static void insertFriends(FileWriter writer, int numFriendships){
+    int num = 0;
+    String[] messages = {"Let's be friends!", "How have you been?", "Long time no see", "Hi", "Heyyyy", "What's up", "Hi friend", "Friends?"};
+    for(int idOne=1; idOne < 100; idOne++){// userID 1
+      for(int idTwo=1; idTwo<6; idTwo++){ //add next 5 user id's to userID 1's friens
+        StringBuilder query = new StringBuilder("INSERT INTO friends VALUES ('");
+        query.append(idOne+"', '");
+
+        int id;
+        if(idOne > 94){
+          id = 1;
+        }else{
+          id=idOne;
+        }
+
+        int nextId = id + idTwo;
+        query.append(nextId+"', ");
+
+        num = rand.nextInt(months.length); //randomly select a month
+        query.append(months[num]+"-");
+
+        //picking a day
+        if(num % 2 == 0){ //odd months have 30 days (offset 1 b/c of array)
+          num = rand.nextInt(31);
+        }else{
+          if(num == 1){ //february is the exception
+            num = rand.nextInt(29);
+          }else{
+            num = rand.nextInt(32);
+          }
+        }
+
+        if(num < 10){
+          query.append("0"+num+"-");
+        }else{
+          query.append(num+"-");
+        }
+
+        num = rand.nextInt(18); //pick a year from 2000-2017
+        num += 2000;
+        // System.out.println("Year generated: "+num);
+        query.append(num+"', 'MMM-DD-YY'), ''");
+
+        num = rand.nextInt(messages.length);
+        query.append(messages[num]+"');");
+
+        System.out.println(query.toString());
+        // try{
+          // System.out.println("trying to write to file");
+          // writer.write(query.toString()+'\n');
+        // } catch(IOException e1){
+          // System.out.println("Unable to write to file");
+        // }
+        query.delete(0, query.length()-1);
+      }
+    }
   }
 }
