@@ -19,10 +19,17 @@ public class DataCreation{
       File dataFile = new File("phase1_sample_data.sql");
       FileWriter dataWriter = new FileWriter(dataFile, false);
 
+      dataWriter.write("--Profile Inserts --\n");
       insertProfiles(dataWriter, numProfiles);
+      dataWriter.write("\n--Pending Friends Inserts --\n");
+      insertPendingFriends(dataWriter,100);
+      dataWriter.write("\n--Friends Inserts --\n");
       insertFriends(dataWriter, 100);
+      dataWriter.write("\n--Group Inserts --\n");
       insertGroups(dataWriter, numGroups);
+      dataWriter.write("\n--Group Member Inserts --\n");
       insertGroupMembers(dataWriter, 50);
+      dataWriter.write("\n--Message Inserts --\n");
       insertMessages(dataWriter, numMessages);
       dataWriter.close();
     }
@@ -103,12 +110,12 @@ public class DataCreation{
       }
 
       System.out.println(query.toString());
-      // try{
+      try{
         System.out.println("trying to write to file");
-        // writer.write(query.toString()+'\n');
-      // } catch(IOException e1){
-      //   System.out.println("Unable to write to file");
-      // }
+        writer.write(query.toString()+'\n');
+      } catch(IOException e1){
+        System.out.println("Unable to write to file");
+      }
       query.delete(0, query.length()-1);
     }
 
@@ -129,10 +136,43 @@ public class DataCreation{
 
     return pass.toString();
   }
+  public static void insertPendingFriends(FileWriter writer, int numFriendships){
+    int num = 0;
+    String[] messages = {"Lets be friends!", "How have you been?", "Long time no see", "Hi", "Heyyyy", "Whats up", "Hi friend", "Friends?"};
+    for(int idOne=1; idOne < 100; idOne++){// userID 1
+      for(int idTwo=1; idTwo<6; idTwo++){ //add next 5 user id's to userID 1's friens
+        StringBuilder query = new StringBuilder("INSERT INTO pendingFriends VALUES ('");
+        query.append(idOne+"', '");
 
+        int p1 = idOne;
+
+        int id;
+        if(idOne > 94){
+          id = 1;
+        }else{
+          id=idOne;
+        }
+
+        int nextId = id + idTwo;
+        query.append(nextId+"', '");
+
+        num = rand.nextInt(messages.length);
+        query.append(messages[num]+"');");
+
+        System.out.println(query.toString());
+        try{
+          System.out.println("trying to write to file");
+          writer.write(query.toString()+'\n');
+        } catch(IOException e1){
+          System.out.println("Unable to write to file");
+        }
+        query.delete(0, query.length()-1);
+      }
+    }
+  }
   public static void insertFriends(FileWriter writer, int numFriendships){
     int num = 0;
-    String[] messages = {"Let's be friends!", "How have you been?", "Long time no see", "Hi", "Heyyyy", "What's up", "Hi friend", "Friends?"};
+    String[] messages = {"Lets be friends!", "How have you been?", "Long time no see", "Hi", "Heyyyy", "Whats up", "Hi friend", "Friends?"};
     for(int idOne=1; idOne < 100; idOne++){// userID 1
       for(int idTwo=1; idTwo<6; idTwo++){ //add next 5 user id's to userID 1's friens
         StringBuilder query = new StringBuilder("INSERT INTO friends VALUES ('");
@@ -182,12 +222,12 @@ public class DataCreation{
         query.append(messages[num]+"');");
 
         System.out.println(query.toString());
-        // try{
-          // System.out.println("trying to write to file");
-          // writer.write(query.toString()+'\n');
-        // } catch(IOException e1){
-          // System.out.println("Unable to write to file");
-        // }
+        try{
+          System.out.println("trying to write to file");
+          writer.write(query.toString()+'\n');
+        } catch(IOException e1){
+          System.out.println("Unable to write to file");
+        }
         query.delete(0, query.length()-1);
       }
     }
@@ -196,7 +236,7 @@ public class DataCreation{
   public static void insertGroups(FileWriter writer, int numGroups){
 
     String[] groupNames = {"Best friends 4evr", "Gaming geeks", "Dnd bros", "Database class", "Study group", "Surprise party", "Charity group", "Church group", "Money makers", "Spring break group"};
-    String[] groupDesc = {"WE ARE THE BESTEST FRIENDS", "Shush I'm playing LoL", "DnD. All night. Every night.", "Best class? Yes.", "In this group we study for physics", "Surprise party for Andrew!", "Charity fundraiser group", "Friends in church", "Make money. No sketchiness.", "Planning for spring break!"};
+    String[] groupDesc = {"WE ARE THE BESTEST FRIENDS", "Shush Im playing LoL", "DnD. All night. Every night.", "Best class? Yes.", "In this group we study for physics", "Surprise party for Andrew!", "Charity fundraiser group", "Friends in church", "Make money. No sketchiness.", "Planning for spring break!"};
 
     for(int i = 1; i <= numGroups; i++){
       StringBuilder query = new StringBuilder("INSERT INTO groups VALUES (");
@@ -207,7 +247,7 @@ public class DataCreation{
   }
 
   public static void insertGroupMembers(FileWriter writer, int numToAdd){
-    String[] msg = {"can i pls be in group", "Add me", "Can I be added please?", "Hey can I get in?", "What's with all the hoopla?"};
+    String[] msg = {"can i pls be in group", "Add me", "Can I be added please?", "Hey can I get in?", "Whats with all the hoopla?"};
     String[] roles = {"admin", "user"};
 
     for(int i = 0; i <= numGroups; i++){
@@ -235,14 +275,23 @@ public class DataCreation{
 
       System.out.println(query.toString());
       System.out.println(query2.toString());
+
+      try{
+        System.out.println("trying to write to file");
+        writer.write(query.toString()+'\n');
+        writer.write(query2.toString()+'\n');
+      } catch(IOException e1){
+        System.out.println("Unable to write to file");
+      }
+
       query.delete(0, query.length()-1);
       query2.delete(0, query2.length()-1);
     }
   }
 
   public static void insertMessages(FileWriter writer, int numMessages){
-    String[] msg = {"Hey", "Hi", "Hey bud", "I miss you!", "Let's hang out sometime?", "How was class today?", "CS is the best!", "Lunch?", "Let's go to dinner!", "Can't wait until Thanksgiving!", "Any fun plans this weekend?", "Bowling?"};
-    String[] group = {"Hey guys!", "How's everyone doin?", "GROUP DINNER!!!", "Party at my place tonight!!", "What's everyone up to?", "Let's get this surprise party ready!"};
+    String[] msg = {"Hey", "Hi", "Hey bud", "I miss you!", "Lets hang out sometime?", "How was class today?", "CS is the best!", "Lunch?", "Lets go to dinner!", "Cant wait until Thanksgiving!", "Any fun plans this weekend?", "Bowling?"};
+    String[] group = {"Hey guys!", "Hows everyone doin?", "GROUP DINNER!!!", "Party at my place tonight!!", "Whats everyone up to?", "Lets get this surprise party ready!"};
 
     for(int i = 1; i <= numMessages; i++){
       StringBuilder query = new StringBuilder("INSERT INTO messages VALUES (");
@@ -315,6 +364,12 @@ public class DataCreation{
       }
 
       System.out.println(query.toString());
+      try{
+        System.out.println("trying to write to file");
+        writer.write(query.toString()+'\n');
+      } catch(IOException e1){
+        System.out.println("Unable to write to file");
+      }
       query.delete(0, query.length()-1);
     }
   }
