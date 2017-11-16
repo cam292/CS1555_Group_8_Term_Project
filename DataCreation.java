@@ -274,9 +274,9 @@ public class DataCreation{
 
       if(inGid[gid-1] == 1){
         //first group member is admin
-        query2.append("'" + gid + "', '" + id + "', " + roles[0] + ");");
+        query2.append("'" + gid + "', '" + id + "', '" + roles[0] + "');");
       } else {
-        query2.append("'" + gid + "', '" + id + "', " + roles[1] + ");");
+        query2.append("'" + gid + "', '" + id + "', '" + roles[1] + "');");
       }
 
       System.out.println(query.toString());

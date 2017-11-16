@@ -1,3 +1,13 @@
+--Drop tables initially
+DROP TABLE IF EXISTS profile;
+DROP TABLE IF EXISTS friends;
+DROP TABLE IF EXISTS pendingFriends;
+DROP TABLE IF EXISTS messages;
+DROP TABLE IF EXISTS messageRecipient;
+DROP TABLE IF EXISTS groups;
+DROP TABLE IF EXISTS groupMembership;
+DROP TABLE IF EXISTS pendingGroupmembers;
+
 --Stores the profile and login information for each user registered in the system
 CREATE TABLE profile(
   userID varchar2(20) NOT NULL NOT DEFERRABLE,
