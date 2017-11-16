@@ -1,12 +1,12 @@
 --Drop tables initially
-DROP TABLE IF EXISTS friends;
-DROP TABLE IF EXISTS pendingFriends;
-DROP TABLE IF EXISTS messageRecipient;
-DROP TABLE IF EXISTS groupMembership;
-DROP TABLE IF EXISTS pendingGroupmembers;
-DROP TABLE IF EXISTS groups;
-DROP TABLE IF EXISTS messages;
-DROP TABLE IF EXISTS profile;
+DROP TABLE friends CASCADE CONSTRAINTS;
+DROP TABLE pendingFriends CASCADE CONSTRAINTS;
+DROP TABLE messageRecipient CASCADE CONSTRAINTS;
+DROP TABLE groupMembership CASCADE CONSTRAINTS;
+DROP TABLE pendingGroupmembers CASCADE CONSTRAINTS;
+DROP TABLE groups CASCADE CONSTRAINTS;
+DROP TABLE messages CASCADE CONSTRAINTS;
+DROP TABLE profile CASCADE CONSTRAINTS;
 
 --Stores the profile and login information for each user registered in the system
 CREATE TABLE profile(
@@ -25,19 +25,19 @@ CREATE TABLE friends(
   userID2 varchar2(20) NOT NULL NOT DEFERRABLE,
   JDate date,
   message varchar2(200),
-  CONSTRAINT friends_PK PRIMARY KEY (userID1,userID2) INITIALLY IMMEDIATE, --should only be one relation between 2 ID's
-  CONSTRAINT friends_FK1 FOREIGN KEY (userID1) REFERENCES profile (userID) INITIALLY IMMEDIATE, --the user id should reference a profile in order to create a friendship
-  CONSTRAINT friends_FK2 FOREIGN KEY (userID2) REFERENCES profile (userID) INITIALLY IMMEDIATE -- same as friends_FK1
+  CONSTRAINT friends_PK PRIMARY KEY (userID1, userID2) INITIALLY IMMEDIATE, --should only be one relation between 2 ID's
+  CONSTRAINT friends_FK1 FOREIGN KEY (userID1) REFERENCES profile(userID) INITIALLY IMMEDIATE, --the user id should reference a profile in order to create a friendship
+  CONSTRAINT friends_FK2 FOREIGN KEY (userID2) REFERENCES profile(userID) INITIALLY IMMEDIATE -- same as friends_FK1
 );
 
 --Stores pending friends requests that have yet to be confirmed by the recipient of the request.
 CREATE TABLE pendingFriends(
   fromID varchar2(20) NOT NULL NOT DEFERRABLE,
   toID varchar2(20) NOT NULL NOT DEFERRABLE,
-  message varchar2(200)
+  message varchar2(200),
   CONSTRAINT pendingFriends_PK PRIMARY KEY (fromID,toID) INITIALLY IMMEDIATE, --both users should exist in order to create a friendship request
-  CONSTRAINT pendingFriends_FK1 FOREIGN KEY (fromID) REFERENCES profile (userID) INITIALLY IMMEDIATE, --the user id should reference a profile in order to create a friend request
-  CONSTRAINT pendingFriends_FK2 FOREIGN KEY (toID) REFERENCES profile (userID) INITIALLY IMMEDIATE --same as pendingFriends_FK1
+  CONSTRAINT pendingFriends_FK1 FOREIGN KEY (fromID) REFERENCES profile(userID) INITIALLY IMMEDIATE, --the user id should reference a profile in order to create a friend request
+  CONSTRAINT pendingFriends_FK2 FOREIGN KEY (toID) REFERENCES profile(userID) INITIALLY IMMEDIATE --same as pendingFriends_FK1
 );
 
 --Stores every message sent by users in the system. Note that the default values of ToUserID
