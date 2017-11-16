@@ -8,8 +8,8 @@ public class DataCreation{
   public static ArrayList<Pair<Integer, Integer>> friendsPairs = new ArrayList<Pair<Integer, Integer>>();
   public static ArrayList<ArrayList<Integer>> gidIds = new ArrayList<ArrayList<Integer>>();
   public static int numGroups = 10;
-  public static int numProfiles = 11; //101
-  public static int numMessages = 31; //300
+  public static int numProfiles = 101;
+  public static int numMessages = 300;
 
   public static int[] inGid = new int[numGroups];
 
@@ -66,12 +66,12 @@ public class DataCreation{
 
       //picking a day
       if(num % 2 == 0){ //odd months have 30 days (offset 1 b/c of array)
-        num = rand.nextInt(30) + 1;
+        num = rand.nextInt(29)+1;
       }else{
         if(num == 1){ //february is the exception
-          num = rand.nextInt(28) + 1;
+          num = rand.nextInt(28)+1;
         }else{
-          num = rand.nextInt(31) + 1;
+          num = rand.nextInt(30)+1;
         }
       }
 
@@ -86,7 +86,7 @@ public class DataCreation{
       // System.out.println("Year generated: "+num);
       query.append(num+"', 'MON-DD-YY'), TO_TIMESTAMP('");
 
-      num = rand.nextInt(28) + 1; //just hard code a day less than 28
+      num = rand.nextInt(28)+1; //just hard code a day less than 28
       if(num < 10){
         query.append("0"+num+"-");
       }else{
@@ -99,14 +99,14 @@ public class DataCreation{
       num = rand.nextInt(18); //pick a year
       query.append(num+":");
 
-      num = rand.nextInt(25); //pick an hour
+      num = rand.nextInt(24); //pick an hour
       query.append(num+":");
 
-      num = rand.nextInt(61); //pick a minute
+      num = rand.nextInt(60); //pick a minute
       if(num < 10){
-        query.append("0"+num+"', 'DD-MON-RR:HH24:MI'));");
+        query.append("0"+num+"', 'DD-MON-YY:HH24:MI'));");
       }else{
-        query.append(num+"', 'DD-MON-RR:HH24:MI'));");
+        query.append(num+"', 'DD-MON-YY:HH24:MI'));");
       }
 
       System.out.println(query.toString());
@@ -126,7 +126,7 @@ public class DataCreation{
     Random rand = new Random();
     int num = 0;
     StringBuilder pass = new StringBuilder();
-    char[] passChars = {'a', 'A', 'b', 'B', 'c', 'C', 'd', 'D', 'e', 'E', 'f', 'F', 'g', 'G', 'h', 'H', 'i', 'I', 'j', 'J', 'k', 'K', 'l', 'L', 'm', 'M', 'n', 'N', 'o', 'O', 'p', 'P', 'q', 'Q', 'r', 'R', 's', 'S', 't', 'T', 'u', 'U', 'v', 'V', 'w', 'W', 'x', 'X', 'y', 'Y', 'z', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '!', '@', '#', '$', '%', '^', '&', '*'};
+    char[] passChars = {'a', 'A', 'b', 'B', 'c', 'C', 'd', 'D', 'e', 'E', 'f', 'F', 'g', 'G', 'h', 'H', 'i', 'I', 'j', 'J', 'k', 'K', 'l', 'L', 'm', 'M', 'n', 'N', 'o', 'O', 'p', 'P', 'q', 'Q', 'r', 'R', 's', 'S', 't', 'T', 'u', 'U', 'v', 'V', 'w', 'W', 'x', 'X', 'y', 'Y', 'z', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
     num = rand.nextInt(45); //make password randomly from 5 to 50 characters
     for(int i=0; i<num+5; i++){
@@ -198,12 +198,12 @@ public class DataCreation{
 
         //picking a day
         if(num % 2 == 0){ //odd months have 30 days (offset 1 b/c of array)
-          num = rand.nextInt(30) + 1;
+          num = rand.nextInt(29)+1;
         }else{
           if(num == 1){ //february is the exception
-            num = rand.nextInt(28) + 1;
+            num = rand.nextInt(28)+1;
           }else{
-            num = rand.nextInt(31) + 1;
+            num = rand.nextInt(30)+1;
           }
         }
 
@@ -216,7 +216,7 @@ public class DataCreation{
         num = rand.nextInt(18); //pick a year from 2000-2017
         num += 2000;
         // System.out.println("Year generated: "+num);
-        query.append(num+"', 'MON-DD-YY'), '");
+        query.append(num+"', 'MON-DD-YYYY'), '");
 
         num = rand.nextInt(messages.length);
         query.append(messages[num]+"');");
@@ -315,7 +315,7 @@ public class DataCreation{
         int num = 0;
         query.append("TO_TIMESTAMP('");
 
-        num = rand.nextInt(28) + 1; //just hard code a day less than 28
+        num = rand.nextInt(28)+1; //just hard code a day less than 28
         if(num < 10){
           query.append("0"+num+"-");
         }else{
@@ -328,14 +328,14 @@ public class DataCreation{
         num = rand.nextInt(18); //pick a year
         query.append(num+":");
 
-        num = rand.nextInt(25); //pick an hour
+        num = rand.nextInt(24); //pick an hour
         query.append(num+":");
 
-        num = rand.nextInt(61); //pick a minute
+        num = rand.nextInt(60); //pick a minute
         if(num < 10){
-          query.append("0"+num+"', 'DD-MON-RR:HH24:MI');");
+          query.append("0"+num+"', 'DD-MON-YY:HH24:MI'));");
         }else{
-          query.append(num+"', 'DD-MON-RR:HH24:MI'));");
+          query.append(num+"', 'DD-MON-YY:HH24:MI'));");
         }
 
       } else {
@@ -345,7 +345,7 @@ public class DataCreation{
         int num = 0;
         query.append("TO_TIMESTAMP('");
 
-        num = rand.nextInt(28) + 1; //just hard code a day less than 28
+        num = rand.nextInt(28)+1; //just hard code a day less than 28
         if(num < 10){
           query.append("0"+num+"-");
         }else{
@@ -358,14 +358,14 @@ public class DataCreation{
         num = rand.nextInt(18); //pick a year
         query.append(num+":");
 
-        num = rand.nextInt(25); //pick an hour
+        num = rand.nextInt(24); //pick an hour
         query.append(num+":");
 
-        num = rand.nextInt(61); //pick a minute
+        num = rand.nextInt(60); //pick a minute
         if(num < 10){
-          query.append("0"+num+"', 'DD-MON-RR:HH24:MI'));");
+          query.append("0"+num+"', 'DD-MON-YY:HH24:MI'));");
         }else{
-          query.append(num+"', 'DD-MON-RR:HH24:MI'));");
+          query.append(num+"', 'DD-MON-YY:HH24:MI'));");
         }
       }
 
