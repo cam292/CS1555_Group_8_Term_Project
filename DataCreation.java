@@ -8,7 +8,7 @@ public class DataCreation{
   public static ArrayList<Pair<Integer, Integer>> friendsPairs = new ArrayList<Pair<Integer, Integer>>();
   public static ArrayList<ArrayList<Integer>> gidIds = new ArrayList<ArrayList<Integer>>();
   public static int numGroups = 10;
-  public static int numProfiles = 100;
+  public static int numProfiles = 101;
   public static int numMessages = 300;
 
   public static int[] inGid = new int[numGroups];
@@ -22,9 +22,9 @@ public class DataCreation{
       dataWriter.write("--Profile Inserts --\n");
       insertProfiles(dataWriter, numProfiles);
       dataWriter.write("\n--Pending Friends Inserts --\n");
-      insertPendingFriends(dataWriter,100);
+      insertPendingFriends(dataWriter,numProfiles);
       dataWriter.write("\n--Friends Inserts --\n");
-      insertFriends(dataWriter, 100);
+      insertFriends(dataWriter, numProfiles);
       dataWriter.write("\n--Group Inserts --\n");
       insertGroups(dataWriter, numGroups);
       dataWriter.write("\n--Group Member Inserts --\n");
@@ -139,7 +139,7 @@ public class DataCreation{
   public static void insertPendingFriends(FileWriter writer, int numFriendships){
     int num = 0;
     String[] messages = {"Lets be friends!", "How have you been?", "Long time no see", "Hi", "Heyyyy", "Whats up", "Hi friend", "Friends?"};
-    for(int idOne=1; idOne < 100; idOne++){// userID 1
+    for(int idOne=1; idOne < numProfiles+1; idOne++){// userID 1
       for(int idTwo=1; idTwo<6; idTwo++){ //add next 5 user id's to userID 1's friens
         StringBuilder query = new StringBuilder("INSERT INTO pendingFriends VALUES ('");
         query.append(idOne+"', '");
@@ -173,7 +173,7 @@ public class DataCreation{
   public static void insertFriends(FileWriter writer, int numFriendships){
     int num = 0;
     String[] messages = {"Lets be friends!", "How have you been?", "Long time no see", "Hi", "Heyyyy", "Whats up", "Hi friend", "Friends?"};
-    for(int idOne=1; idOne < 100; idOne++){// userID 1
+    for(int idOne=1; idOne < numProfiles+1; idOne++){// userID 1
       for(int idTwo=1; idTwo<6; idTwo++){ //add next 5 user id's to userID 1's friens
         StringBuilder query = new StringBuilder("INSERT INTO friends VALUES ('");
         query.append(idOne+"', '");
@@ -242,6 +242,12 @@ public class DataCreation{
       StringBuilder query = new StringBuilder("INSERT INTO groups VALUES (");
       query.append("'" + i + "', '" + groupNames[i-1] + "', '" + groupDesc[i-1] + "');");
       System.out.println(query.toString());
+      try{
+        System.out.println("trying to write to file");
+        writer.write(query.toString()+'\n');
+      } catch(IOException e1){
+        System.out.println("Unable to write to file");
+      }
       query.delete(0, query.length()-1);
     }
   }
