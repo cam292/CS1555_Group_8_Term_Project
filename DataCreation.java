@@ -10,9 +10,9 @@ public class DataCreation{
   public static int numGroups = 10;
   public static int numProfiles = 100;
   public static int numMessages = 300;
-  
+
   public static int[] inGid = new int[numGroups];
-  
+
   public static void main(String[] args){
     rand = new Random();
     try{
@@ -137,9 +137,9 @@ public class DataCreation{
       for(int idTwo=1; idTwo<6; idTwo++){ //add next 5 user id's to userID 1's friens
         StringBuilder query = new StringBuilder("INSERT INTO friends VALUES ('");
         query.append(idOne+"', '");
-        
+
         int p1 = idOne;
-        
+
         int id;
         if(idOne > 94){
           id = 1;
@@ -148,11 +148,11 @@ public class DataCreation{
         }
 
         int nextId = id + idTwo;
-        query.append(nextId+"', ");
+        query.append(nextId+"', TO_DATE('");
 
         int p2 = nextId;
         friendsPairs.add(new Pair(p1, p2));
-        
+
         num = rand.nextInt(months.length); //randomly select a month
         query.append(months[num]+"-");
 
@@ -176,7 +176,7 @@ public class DataCreation{
         num = rand.nextInt(18); //pick a year from 2000-2017
         num += 2000;
         // System.out.println("Year generated: "+num);
-        query.append(num+"', 'MMM-DD-YY'), ''");
+        query.append(num+"', 'MMM-DD-YY'), '");
 
         num = rand.nextInt(messages.length);
         query.append(messages[num]+"');");
@@ -192,12 +192,12 @@ public class DataCreation{
       }
     }
   }
-  
+
   public static void insertGroups(FileWriter writer, int numGroups){
-    
+
     String[] groupNames = {"Best friends 4evr", "Gaming geeks", "Dnd bros", "Database class", "Study group", "Surprise party", "Charity group", "Church group", "Money makers", "Spring break group"};
     String[] groupDesc = {"WE ARE THE BESTEST FRIENDS", "Shush I'm playing LoL", "DnD. All night. Every night.", "Best class? Yes.", "In this group we study for physics", "Surprise party for Andrew!", "Charity fundraiser group", "Friends in church", "Make money. No sketchiness.", "Planning for spring break!"};
-    
+
     for(int i = 1; i <= numGroups; i++){
       StringBuilder query = new StringBuilder("INSERT INTO groups VALUES (");
       query.append("'" + i + "', '" + groupNames[i-1] + "', '" + groupDesc[i-1] + "');");
@@ -205,45 +205,45 @@ public class DataCreation{
       query.delete(0, query.length()-1);
     }
   }
-  
+
   public static void insertGroupMembers(FileWriter writer, int numToAdd){
     String[] msg = {"can i pls be in group", "Add me", "Can I be added please?", "Hey can I get in?", "What's with all the hoopla?"};
     String[] roles = {"admin", "user"};
-    
+
     for(int i = 0; i <= numGroups; i++){
       gidIds.add(i, new ArrayList<Integer>()); //initialize arrays
     }
-    
+
     for(int i = 0; i < numToAdd; i++){
-      
+
       StringBuilder query = new StringBuilder("INSERT INTO pendingGroupMembers VALUES (");
       StringBuilder query2 = new StringBuilder("INSERT INTO groupMembership VALUES (");
-      
+
       int id = rand.nextInt(numProfiles)+1;
       int gid = rand.nextInt(numGroups)+1;
       inGid[gid-1]++;
       gidIds.get(gid).add(id);
       int msgNum = rand.nextInt(msg.length);
       query.append("'" + gid + "', '" + id + "', '" + msg[msgNum] + "');");
-      
+
       if(inGid[gid-1] == 1){
         //first group member is admin
         query2.append("'" + gid + "', '" + id + "', " + roles[0] + ");");
       } else {
         query2.append("'" + gid + "', '" + id + "', " + roles[1] + ");");
       }
-      
+
       System.out.println(query.toString());
       System.out.println(query2.toString());
       query.delete(0, query.length()-1);
       query2.delete(0, query2.length()-1);
     }
   }
-  
+
   public static void insertMessages(FileWriter writer, int numMessages){
     String[] msg = {"Hey", "Hi", "Hey bud", "I miss you!", "Let's hang out sometime?", "How was class today?", "CS is the best!", "Lunch?", "Let's go to dinner!", "Can't wait until Thanksgiving!", "Any fun plans this weekend?", "Bowling?"};
     String[] group = {"Hey guys!", "How's everyone doin?", "GROUP DINNER!!!", "Party at my place tonight!!", "What's everyone up to?", "Let's get this surprise party ready!"};
-    
+
     for(int i = 1; i <= numMessages; i++){
       StringBuilder query = new StringBuilder("INSERT INTO messages VALUES (");
       //select random friend pair OR group
@@ -282,7 +282,7 @@ public class DataCreation{
         }else{
           query.append(num+"', 'DD-MON-RR:HH24:MI'));");
         }
-        
+
       } else {
         //friend message
         Pair pair = friendsPairs.get(rand.nextInt(friendsPairs.size()));
@@ -313,13 +313,13 @@ public class DataCreation{
           query.append(num+"', 'DD-MON-RR:HH24:MI'));");
         }
       }
-      
+
       System.out.println(query.toString());
       query.delete(0, query.length()-1);
     }
   }
-  
-  
+
+
   public static class Pair<F, S> {
     private F first; //first member of pair
     private S second; //second member of pair
