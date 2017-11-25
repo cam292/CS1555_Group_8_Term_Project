@@ -12,6 +12,7 @@ DROP TABLE profile CASCADE CONSTRAINTS;
 CREATE TABLE profile(
   userID varchar2(20) NOT NULL NOT DEFERRABLE,
   name varchar2(50),
+  email varchar2(50),
   password varchar2(50),
   date_of_birth date,
   lastlogin timestamp,

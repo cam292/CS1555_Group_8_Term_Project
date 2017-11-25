@@ -52,13 +52,18 @@ public class DataCreation{
 
     for(int id=1; id < numProfiles+1; id++){
       StringBuilder query = new StringBuilder("INSERT INTO profile VALUES ('");
+	  StringBuilder email = new StringBuilder();
       query.append(id+"', '");
       num = rand.nextInt(firstNames.length); //randomly select a first name
       query.append(firstNames[num]+" ");
-
+	  email.append(firstNames[num]);
       num = rand.nextInt(lastNames.length); //randomly select a last name
       query.append(lastNames[num]+"', '");
-
+	  email.append(lastNames[num]);
+	  //email
+	  email.append(rand.nextInt(1000)+"@gmail.com");
+	  query.append(email + "', '");
+	  
       query.append(genPassword()+"', TO_DATE('"); //pick a password
 
       num = rand.nextInt(months.length); //randomly select a month
