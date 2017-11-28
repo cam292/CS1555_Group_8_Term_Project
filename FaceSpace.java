@@ -12,12 +12,12 @@ public class FaceSpace{
 	
 	//  Database credentials
 	static final String USER = "dpd30";
-    static final String PASS = "3924808"; //please don't steal this lol
+  	static final String PASS = "3924808"; //please don't steal this lol
 	
 	// Other variables
-	static int profileIndex = 0;
+	static int profileIndex = 0;	//should be saved to a file after each use
    
-    public static void main(String[] args) {
+	public static void main(String[] args) {
 		//use main to setup connection and then test functions
 		//String classpath = System.getProperty("java.class.path");
 		//System.out.println(classpath);
@@ -57,20 +57,16 @@ public class FaceSpace{
 			e.printStackTrace();
 		}
 		*/
-		String query = "INSERT INTO profile VALUES( ? , ? , ? , ? , ? , ? );";
-		String timeStamp = "TO_TIMESTAMP('" + new SimpleDateFormat("d-MMM-yy:HH:mm").format(new java.util.Date()) + "', 'DD-MON-YY:HH24:MI')"; 
-		String birth = "TO_DATE('" + new SimpleDateFormat("MMM-d-yy").format(dateOfBirth) + "', MON-DD-YY')";
+		String timeStamp = "TO_TIMESTAMP('" + new SimpleDateFormat("dd-MMM-yy:HH:mm").format(new java.util.Date()) + "', 'DD-MON-YY:HH24:MI')"; 
+		String birth = "TO_DATE('" + new SimpleDateFormat("MMM-dd-yy").format(dateOfBirth) + "', 'MON-DD-YY')";
+		String query = "INSERT INTO profile VALUES( ? , ? , ? , ? , " + birth + " , " + timeStamp + " )"; //this is safe since an sql date has to be passed in, not a string
 		try {
-			System.out.println(query);
 			PreparedStatement pstmt = conn.prepareStatement(query);
 			pstmt.setString(1, Integer.toString(profileIndex));
 			pstmt.setString(2, name);
 			pstmt.setString(3, email);
 			pstmt.setString(4, pass);
-			pstmt.setString(5, birth);
-			pstmt.setString(6, timeStamp);
-			System.out.println("Insert into profile values(" + profileIndex + ", " + name + ", " + email + ", " + pass + ", " + birth + ", " + timeStamp + ");");
-			//System.out.println(pstmt.asSql());;
+			System.out.println("birth: " + birth + ", timestamp: " + timeStamp);
 			pstmt.executeUpdate();
 		} catch (SQLException se){
 			se.printStackTrace();
