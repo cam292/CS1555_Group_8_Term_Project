@@ -19,8 +19,8 @@ public class FaceSpace{
    
     public static void main(String[] args) {
 		//use main to setup connection and then test functions
-		String classpath = System.getProperty("java.class.path");
-		System.out.println(classpath);
+		//String classpath = System.getProperty("java.class.path");
+		//System.out.println(classpath);
 		try{
 			//Register JDBC driver
 			DriverManager.registerDriver (new oracle.jdbc.driver.OracleDriver());
@@ -47,16 +47,31 @@ public class FaceSpace{
 	}
 	
 	public static void createUser(String name, String email, String pass, java.sql.Date dateOfBirth){
-		String query = "INSERT INTO profile VALUES(profileIndex, ?, ?, ?, ?, ?)";
-		String timeStamp = new SimpleDateFormat("DD-MON-YY:HH24:MI").format(new java.util.Date()); 
-		String birth = new SimpleDateFormat("MON-DD-YY").format(dateOfBirth);
+		/* WORKING EXAMPLE
+		String query = "INSERT INTO profile VALUES('" + profileIndex + "', 'Ron Swanson', 'RS23@gmail.com', 'abab', TO_DATE('JUN-13-2009', 'MON-DD-YY'), TO_TIMESTAMP('23-JUN-18:12:23', 'DD-MON-YY:HH24:MI'))";
 		try {
+			System.out.println(query);
 			PreparedStatement pstmt = conn.prepareStatement(query);
-			pstmt.setString(1, name);
-			pstmt.setString(2, email);
-			pstmt.setString(3, pass);
-			pstmt.setString(4, birth);
-			pstmt.setString(5, timeStamp);
+			pstmt.executeUpdate();
+		} catch (Exception e){
+			e.printStackTrace();
+		}
+		*/
+		String query = "INSERT INTO profile VALUES( ? , ? , ? , ? , ? , ? );";
+		String timeStamp = "TO_TIMESTAMP('" + new SimpleDateFormat("d-MMM-yy:HH:mm").format(new java.util.Date()) + "', 'DD-MON-YY:HH24:MI')"; 
+		String birth = "TO_DATE('" + new SimpleDateFormat("MMM-d-yy").format(dateOfBirth) + "', MON-DD-YY')";
+		try {
+			System.out.println(query);
+			PreparedStatement pstmt = conn.prepareStatement(query);
+			pstmt.setString(1, Integer.toString(profileIndex));
+			pstmt.setString(2, name);
+			pstmt.setString(3, email);
+			pstmt.setString(4, pass);
+			pstmt.setString(5, birth);
+			pstmt.setString(6, timeStamp);
+			System.out.println("Insert into profile values(" + profileIndex + ", " + name + ", " + email + ", " + pass + ", " + birth + ", " + timeStamp + ");");
+			//System.out.println(pstmt.asSql());;
+			pstmt.executeUpdate();
 		} catch (SQLException se){
 			se.printStackTrace();
 		}
