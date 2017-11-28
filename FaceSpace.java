@@ -22,7 +22,13 @@ public class FaceSpace{
 	static String myId;
 	static String myName;
 
+	// Input
+	static Scanner scan;
+
 	public static void main(String[] args) {
+
+		scan = new Scanner(System.in);
+
 		//use main to setup connection and then test functions
 		//String classpath = System.getProperty("java.class.path");
 		//System.out.println(classpath);
@@ -48,9 +54,13 @@ public class FaceSpace{
 		
 		//test functions
 		createUser("John Warwick", "jwarwick@gmail.com", "abab", new java.sql.Date(2017, 12, 5));
-		
+		createUser("Ron Swanson", "rs23@gmail.com", "cbcb", new java.sql.Date(2017, 5, 4));
+
 		Login("0", "abab");
 		
+		InitiateFriendship("1");
+
+		scan.close();
 	}
 	
 	public static void createUser(String name, String email, String pass, java.sql.Date dateOfBirth){
@@ -104,6 +114,31 @@ public class FaceSpace{
 			System.out.println("Logged in as " + myName + "!");
 			
 		} catch (SQLException se){
+			se.printStackTrace();
+		}
+	}
+
+	public static void InitiateFriendship(String toId){
+		try{
+			if(myId == "" || myId == null){
+				System.out.println("You are not logged in!");
+				return;
+			}
+			String query = "INSERT INTO pendingFriends VALUES(" + myId + ", ? , ? )";
+			System.out.println("Please enter the message to go along with the friend request: ");
+			String message = scan.next();
+			PreparedStatement pstmt = conn.prepareStatement(query);
+			pstmt.setString(1, toId);
+			pstmt.setString(2, message);
+			System.out.println("\nAre you sure you want to send the friend request? 'y' or 'n': ");
+			String res = scan.next();
+			if(res.equals("y") || res.equals("yes")){
+				pstmt.executeQuery();
+				System.out.println("Request sent!");
+			} else {
+				System.out.println("Request not sent!");
+			}
+		} catch(SQLException se){
 			se.printStackTrace();
 		}
 	}
