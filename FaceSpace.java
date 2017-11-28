@@ -17,6 +17,11 @@ public class FaceSpace{
 	// Other variables
 	static int profileIndex = 0;	//should be saved to a file after each use
    
+
+	// Logged in user info
+	static String myId;
+	static String myName;
+
 	public static void main(String[] args) {
 		//use main to setup connection and then test functions
 		//String classpath = System.getProperty("java.class.path");
@@ -44,6 +49,8 @@ public class FaceSpace{
 		//test functions
 		createUser("John Warwick", "jwarwick@gmail.com", "abab", new java.sql.Date(2017, 12, 5));
 		
+		Login("0", "abab");
+		
 	}
 	
 	public static void createUser(String name, String email, String pass, java.sql.Date dateOfBirth){
@@ -66,7 +73,7 @@ public class FaceSpace{
 			pstmt.setString(2, name);
 			pstmt.setString(3, email);
 			pstmt.setString(4, pass);
-			System.out.println("birth: " + birth + ", timestamp: " + timeStamp);
+			//System.out.println("birth: " + birth + ", timestamp: " + timeStamp);
 			pstmt.executeUpdate();
 		} catch (SQLException se){
 			se.printStackTrace();
@@ -75,4 +82,29 @@ public class FaceSpace{
 		profileIndex++;
 	}
 	
+	public static void Login(String id, String password){
+		String query = "SELECT * FROM profile WHERE userid= ? AND password= ?";
+		
+		//read result set - if we have a match, set the user credentials in this program
+		try {
+			PreparedStatement pstmt = conn.prepareStatement(query);
+			pstmt.setString(1, id);
+			pstmt.setString(2, password);
+			ResultSet rs = pstmt.executeQuery();
+			while(rs.next()){
+				myId = rs.getString("userid");
+				myName = rs.getString("name");
+			}
+			String timeStamp = "TO_TIMESTAMP('" + new SimpleDateFormat("dd-MMM-yy:HH:mm").format(new java.util.Date()) + "', 'DD-MON-YY:HH24:MI')";
+			String query2 = "UPDATE profile SET lastlogin=" + timeStamp + " WHERE userid= ? AND password= ?";
+			PreparedStatement pstmt2 = conn.prepareStatement(query2);
+			pstmt2.setString(1, id);
+			pstmt2.setString(2, password);
+			pstmt2.executeQuery();
+			System.out.println("Logged in as " + myName + "!");
+			
+		} catch (SQLException se){
+			se.printStackTrace();
+		}
+	}
 }
