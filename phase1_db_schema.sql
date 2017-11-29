@@ -115,14 +115,15 @@ CREATE OR REPLACE TRIGGER newFriendTrigger
 BEFORE INSERT ON friends
 FOR EACH ROW
 DECLARE
-    v_count NUMBER;
+    --v_count NUMBER;
 BEGIN
-    SELECT COUNT(*) INTO v_count FROM pendingFriends p WHERE :new.userID1=p.fromID AND :new.userID2=p.toID;
-    IF v_count > 0 THEN
-    	DELETE FROM pendingFriends p WHERE :new.userID1=p.fromID AND :new.userID2=p.toID;
+    --SELECT COUNT(*) INTO v_count FROM pendingFriends p WHERE :new.userID1=p.fromID AND :new.userID2=p.toID;
+    --IF v_count > 0 THEN
+    DELETE FROM pendingFriends p WHERE :new.userID1=p.fromID AND :new.userID2=p.toID;
+    DELETE FROM pendingFriends p WHERE :new.userID2=p.fromID AND :new.userID1=p.toID;
     --ELSE
     --    ROLLBACK TRANSACTION; --this person cannot be added as they were not a pending friend
-    END IF;
+    --END IF;
 END;
 /
 

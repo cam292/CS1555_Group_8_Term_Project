@@ -12,12 +12,23 @@ public class FaceSpace{
 	
 	//  Database credentials
 	static final String USER = "dpd30";
-    static final String PASS = "3924808"; //please don't steal this lol
+  	static final String PASS = "3924808"; //please don't steal this lol
 	
 	// Other variables
-	static int profileIndex = 0;
+	static int profileIndex = 0;	//should be saved to a file after each use
    
-    public static void main(String[] args) {
+
+	// Logged in user info
+	static String myId;
+	static String myName;
+
+	// Input
+	static Scanner scan;
+
+	public static void main(String[] args) {
+
+		scan = new Scanner(System.in);
+
 		//use main to setup connection and then test functions
 		//String classpath = System.getProperty("java.class.path");
 		//System.out.println(classpath);
@@ -43,7 +54,17 @@ public class FaceSpace{
 		
 		//test functions
 		createUser("John Warwick", "jwarwick@gmail.com", "abab", new java.sql.Date(2017, 12, 5));
+		createUser("Ron Swanson", "rs23@gmail.com", "cbcb", new java.sql.Date(2017, 5, 4));
+
+		Login("0", "abab");
 		
+		InitiateFriendship("1");
+
+		Login("1", "cbcb");
+
+		ConfirmFriendship();
+
+		scan.close();
 	}
 	
 	public static void createUser(String name, String email, String pass, java.sql.Date dateOfBirth){
@@ -57,20 +78,16 @@ public class FaceSpace{
 			e.printStackTrace();
 		}
 		*/
-		String query = "INSERT INTO profile VALUES( ? , ? , ? , ? , ? , ? );";
-		String timeStamp = "TO_TIMESTAMP('" + new SimpleDateFormat("d-MMM-yy:HH:mm").format(new java.util.Date()) + "', 'DD-MON-YY:HH24:MI')"; 
-		String birth = "TO_DATE('" + new SimpleDateFormat("MMM-d-yy").format(dateOfBirth) + "', MON-DD-YY')";
+		String timeStamp = "TO_TIMESTAMP('" + new SimpleDateFormat("dd-MMM-yy:HH:mm").format(new java.util.Date()) + "', 'DD-MON-YY:HH24:MI')"; 
+		String birth = "TO_DATE('" + new SimpleDateFormat("MMM-dd-yy").format(dateOfBirth) + "', 'MON-DD-YY')";
+		String query = "INSERT INTO profile VALUES( ? , ? , ? , ? , " + birth + " , " + timeStamp + " )"; //this is safe since an sql date has to be passed in, not a string
 		try {
-			System.out.println(query);
 			PreparedStatement pstmt = conn.prepareStatement(query);
 			pstmt.setString(1, Integer.toString(profileIndex));
 			pstmt.setString(2, name);
 			pstmt.setString(3, email);
 			pstmt.setString(4, pass);
-			pstmt.setString(5, birth);
-			pstmt.setString(6, timeStamp);
-			System.out.println("Insert into profile values(" + profileIndex + ", " + name + ", " + email + ", " + pass + ", " + birth + ", " + timeStamp + ");");
-			//System.out.println(pstmt.asSql());;
+			//System.out.println("birth: " + birth + ", timestamp: " + timeStamp);
 			pstmt.executeUpdate();
 		} catch (SQLException se){
 			se.printStackTrace();
@@ -79,4 +96,143 @@ public class FaceSpace{
 		profileIndex++;
 	}
 	
+	public static void Login(String id, String password){
+		String query = "SELECT * FROM profile WHERE userid= ? AND password= ?";
+		
+		//read result set - if we have a match, set the user credentials in this program
+		try {
+			PreparedStatement pstmt = conn.prepareStatement(query);
+			pstmt.setString(1, id);
+			pstmt.setString(2, password);
+			ResultSet rs = pstmt.executeQuery();
+			while(rs.next()){
+				myId = rs.getString("userid");
+				myName = rs.getString("name");
+			}
+			String timeStamp = "TO_TIMESTAMP('" + new SimpleDateFormat("dd-MMM-yy:HH:mm").format(new java.util.Date()) + "', 'DD-MON-YY:HH24:MI')";
+			String query2 = "UPDATE profile SET lastlogin=" + timeStamp + " WHERE userid= ? AND password= ?";
+			PreparedStatement pstmt2 = conn.prepareStatement(query2);
+			pstmt2.setString(1, id);
+			pstmt2.setString(2, password);
+			pstmt2.executeQuery();
+			System.out.println("Logged in as " + myName + "!");
+			
+		} catch (SQLException se){
+			se.printStackTrace();
+		}
+	}
+
+	public static void InitiateFriendship(String toId){
+		try{
+			if(myId == "" || myId == null){
+				System.out.println("You are not logged in!");
+				return;
+			}
+			String query = "INSERT INTO pendingFriends VALUES(" + myId + ", ? , ? )";
+			System.out.println("Please enter the message to go along with the friend request: ");
+			String message = scan.nextLine();
+			PreparedStatement pstmt = conn.prepareStatement(query);
+			pstmt.setString(1, toId);
+			pstmt.setString(2, message);
+			System.out.println("\nAre you sure you want to send the friend request? 'y' or 'n': ");
+			String res = scan.nextLine();
+			if(res.equals("y") || res.equals("yes")){
+				pstmt.executeQuery();
+				System.out.println("Request sent!");
+			} else {
+				System.out.println("Request not sent!");
+			}
+		} catch(SQLException se){
+			se.printStackTrace();
+		}
+	}
+
+	public static void ConfirmFriendship(){
+		try {
+			String done="";
+			while(!done.equals("-2")){
+			if(myId == "" || myId == null){
+				System.out.println("You are not logged in!");
+				return;
+			}
+			String query = "SELECT * FROM pendingfriends p JOIN profile f on p.fromid=f.userid WHERE toid=" + myId;
+			PreparedStatement pstmt = conn.prepareStatement(query);
+			ResultSet rs = pstmt.executeQuery();
+			int i = 0;
+			ArrayList<String> fromIds = new ArrayList<String>();
+			ArrayList<String> messages = new ArrayList<String>();
+			System.out.println("Here are your following friend requests: ");
+			while(rs.next()){
+				System.out.println(i + ": " + rs.getString("name") + " (" + rs.getString("fromid") + "), " + rs.getString("message"));
+				fromIds.add(rs.getString("fromId"));
+				messages.add(rs.getString("message"));
+				i++;
+			}
+			
+			//get pendingGroupMembers where myId in groupMembership and role="admin"
+			query = "SELECT * FROM (SELECT * FROM (SELECT * FROM groupMembership WHERE userid=" + myId + " AND role='admin') g JOIN pendingGroupMembers p ON g.gid=p.gid) n JOIN profile f ON userId=f.userId";
+			pstmt = conn.prepareStatement(query);
+			rs = pstmt.executeQuery();
+			System.out.println("Here are all of your following group requests: ");
+			
+			ArrayList<String> gids = new ArrayList<String>();
+			ArrayList<String> gFromIds = new ArrayList<String>();
+			ArrayList<String> gMessages = new ArrayList<String>();
+			int groupStart = i;
+			while(rs.next()){
+				System.out.println(i + ": Group " + rs.getString("gid") + ", " + rs.getString("name") + " (" + rs.getString("userId") + "), " + rs.getString("message"));
+				gids.add(rs.getString("gid"));
+				gFromIds.add(rs.getString("userId"));
+				gMessages.add(rs.getString("message"));
+				i++;
+			}
+			System.out.println("Please select a number to accept, or type \"-1\" for all. Once you are done, type \"-2\"");
+			done=scan.nextLine();
+			if(done.equals("-1")){
+				System.out.println("Accepting all!");
+				for(int j = 0; j < i; j++){
+					int acceptNum = j;
+					String date = "TO_DATE('" + new SimpleDateFormat("MMM-dd-yy").format(new java.util.Date()) + "', 'MON-DD-YY')";
+					if(acceptNum >= i){
+						System.out.println("Invalid number.");
+					} else {
+						String query2="";
+						if(acceptNum < groupStart){
+							query2="INSERT INTO friends VALUES('" + myId + "', '" + fromIds.get(acceptNum) + "', " + date + ", '" + messages.get(acceptNum) + "')";
+						} else {
+							query2="INSERT INTO groupMembership VALUES('" + gids.get(acceptNum) + "', '" + gFromIds.get(acceptNum) + "', 'member')";
+						}
+						PreparedStatement pstmt2 = conn.prepareStatement(query2);
+						pstmt2.executeQuery();
+					}
+				}
+			} else if (Integer.parseInt(done) >= 0){
+				int acceptNum = Integer.parseInt(done);
+				String date = "TO_DATE('" + new SimpleDateFormat("MMM-dd-yy").format(new java.util.Date()) + "', 'MON-DD-YY')";
+				if(acceptNum >= i){
+					System.out.println("Invalid number.");
+				} else {
+					String query2="";
+					if(acceptNum < groupStart){
+						query2="INSERT INTO friends VALUES('" + myId + "', '" + fromIds.get(acceptNum) + "', " + date + ", '" + messages.get(acceptNum) + "')";
+					} else {
+						query2="INSERT INTO groupMembership VALUES('" + gids.get(acceptNum) + "', '" + gFromIds.get(acceptNum) + "', 'member')";
+					}
+					PreparedStatement pstmt2 = conn.prepareStatement(query2);
+					pstmt2.executeQuery();
+				}
+			}
+	
+			} //finished
+
+			System.out.println("Done adding. All other requests have been rejected.");
+			//run delete from statements		
+			String delQuery = "DELETE FROM pendingFriends p WHERE p.toId=" + myId;
+			PreparedStatement delPrep = conn.prepareStatement(delQuery);
+			delPrep.executeQuery();
+
+		} catch (SQLException se){
+			se.printStackTrace();
+		}
+	}
 }
