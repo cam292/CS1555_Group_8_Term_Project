@@ -15,7 +15,7 @@ public class FaceSpace{
   	static final String PASS = "3924808"; //please don't steal this lol
 	
 	// Other variables
-	static int profileIndex = 0;	//should be saved to a file after each use
+	static int profileIndex = 1;	//should be saved to a file after each use
    
 
 	// Logged in user info
@@ -52,17 +52,20 @@ public class FaceSpace{
 			e.printStackTrace();
 		}
 		
+		//TODO: create actual menu
 		//test functions
 		createUser("John Warwick", "jwarwick@gmail.com", "abab", new java.sql.Date(2017, 12, 5));
 		createUser("Ron Swanson", "rs23@gmail.com", "cbcb", new java.sql.Date(2017, 5, 4));
 
-		Login("0", "abab");
+		Login("1", "abab");
 		
-		InitiateFriendship("1");
+		InitiateFriendship("2");
 
-		Login("1", "cbcb");
+		Login("2", "cbcb");
 
 		ConfirmFriendship();
+
+		DisplayFriends();
 
 		scan.close();
 	}
@@ -199,6 +202,9 @@ public class FaceSpace{
 						String query2="";
 						if(acceptNum < groupStart){
 							query2="INSERT INTO friends VALUES('" + myId + "', '" + fromIds.get(acceptNum) + "', " + date + ", '" + messages.get(acceptNum) + "')";
+							PreparedStatement pstmt3=conn.prepareStatement("INSERT INTO friends VALUES('" + fromIds.get(acceptNum) + "', '" + myId + "', " + date + ", '" + messages.get(acceptNum) + "')");
+							pstmt3.executeQuery();
+							
 						} else {
 							query2="INSERT INTO groupMembership VALUES('" + gids.get(acceptNum) + "', '" + gFromIds.get(acceptNum) + "', 'member')";
 						}
@@ -215,6 +221,8 @@ public class FaceSpace{
 					String query2="";
 					if(acceptNum < groupStart){
 						query2="INSERT INTO friends VALUES('" + myId + "', '" + fromIds.get(acceptNum) + "', " + date + ", '" + messages.get(acceptNum) + "')";
+						PreparedStatement pstmt3=conn.prepareStatement("INSERT INTO friends VALUES('" + fromIds.get(acceptNum) + "', '" + myId + "', " + date + ", '" + messages.get(acceptNum) + "')");
+						pstmt3.executeQuery();
 					} else {
 						query2="INSERT INTO groupMembership VALUES('" + gids.get(acceptNum) + "', '" + gFromIds.get(acceptNum) + "', 'member')";
 					}
@@ -235,4 +243,57 @@ public class FaceSpace{
 			se.printStackTrace();
 		}
 	}
+
+	public static void DisplayFriends(){
+		try{
+			String done="-1";
+			//each friend tuple stored as (1,2) and (2,1) for simplicity
+			String friendQuery = "SELECT * FROM friends f JOIN profile p ON f.userid2=p.userid WHERE f.userid1=" + myId;
+			PreparedStatement pstmt = conn.prepareStatement(friendQuery);
+			ResultSet rs = pstmt.executeQuery();
+			System.out.println("Here are all of your friends: ");
+			ArrayList<String> friendIds = new ArrayList<String>();
+			ArrayList<String> friendNames = new ArrayList<String>();
+			ArrayList<String> friendEmails = new ArrayList<String>();
+			ArrayList<String> friendDob = new ArrayList<String>();
+			while(rs.next()){
+				System.out.println("Id: " + rs.getString("userid2") + "\t\tName: " + rs.getString("name")); 
+				friendIds.add(rs.getString("userid2"));
+				friendNames.add(rs.getString("name"));
+				friendEmails.add(rs.getString("email"));
+				friendDob.add(rs.getString("date_of_birth"));
+			}
+			System.out.println("\n\nHere are all of your friends' friends: ");
+			for(int i = 0; i < friendIds.size(); i++){
+				String friendQuery2 = "SELECT * FROM friends f JOIN profile p ON f.userid2=p.userid WHERE f.userid1=" + friendIds.get(i);
+				PreparedStatement pstmt2 = conn.prepareStatement(friendQuery2);
+				ResultSet rs2 = pstmt2.executeQuery();
+				while(rs2.next()){
+					if(!rs2.getString("userid2").equals(myId)){
+						System.out.println("Id: " + rs2.getString("userid2") + "\t\tName: " + rs2.getString("name") + "\t\tFriend of: " + friendNames.get(i));
+					}
+				}
+			}
+			while(!done.equals("0")){
+			System.out.println("Please enter a userID of a friend to view their profile or '0' to return to the menu.");
+			done = scan.nextLine();
+			if(!done.equals("0")){
+				if(friendIds.contains(done)){
+					int index = 0;
+					for(int i = 0; i < friendIds.size(); i++){
+						if(friendIds.get(i)==done){
+							index = i;
+						}
+					}
+					System.out.println("Id: " + friendIds.get(index) + "\t\tName: " + friendNames.get(index) + "\t\tEmail: " + friendEmails.get(index) + "\t\tDate of birth: " + friendDob.get(index));
+				} else {
+					System.out.println("Invalid id or not a friend. Please try again.");
+				}
+			}
+			} //return to menu
+		} catch (SQLException se){
+			se.printStackTrace();
+		}
+	}
+
 }
