@@ -66,6 +66,7 @@ CREATE TABLE messageRecipient(
 --Stores information for each group in the system
 CREATE TABLE groups(
   gID varchar2(20) NOT NULL DEFERRABLE,
+  memberLimit varchar2(20) NOT NULL,
   name varchar2(50) NOT NULL, --a group must have a name
   description varchar2(200),
   CONSTRAINT groups_PK PRIMARY KEY (gID) INITIALLY IMMEDIATE DEFERRABLE, --Creation of a group must be a unique ID

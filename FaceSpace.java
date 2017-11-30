@@ -16,7 +16,7 @@ public class FaceSpace{
 	
 	// Other variables
 	static int profileIndex = 1;	//should be saved to a file after each use
-   
+   	static int gidIndex = 1;
 
 	// Logged in user info
 	static String myId;
@@ -57,15 +57,19 @@ public class FaceSpace{
 		createUser("John Warwick", "jwarwick@gmail.com", "abab", new java.sql.Date(2017, 12, 5));
 		createUser("Ron Swanson", "rs23@gmail.com", "cbcb", new java.sql.Date(2017, 5, 4));
 
-		Login("1", "abab");
+		//Login("1", "abab");
 		
-		InitiateFriendship("2");
+		//InitiateFriendship("2");
 
 		Login("2", "cbcb");
 
-		ConfirmFriendship();
+		//ConfirmFriendship();
 
-		DisplayFriends();
+		//DisplayFriends();
+
+		CreateGroup("BFFs4EVA", "5", "We r tha best!");
+
+		InitiateAddingGroup("1", "1", "Please add John");
 
 		scan.close();
 	}
@@ -172,8 +176,8 @@ public class FaceSpace{
 				i++;
 			}
 			
-			//get pendingGroupMembers where myId in groupMembership and role="admin"
-			query = "SELECT * FROM (SELECT * FROM (SELECT * FROM groupMembership WHERE userid=" + myId + " AND role='admin') g JOIN pendingGroupMembers p ON g.gid=p.gid) n JOIN profile f ON userId=f.userId";
+			//get pendingGroupMembers where myId in groupMembership and role="manager"
+			query = "SELECT * FROM (SELECT * FROM (SELECT * FROM groupMembership WHERE userid=" + myId + " AND role='manager') g JOIN pendingGroupMembers p ON g.gid=p.gid) n JOIN profile f ON userId=f.userId";
 			pstmt = conn.prepareStatement(query);
 			rs = pstmt.executeQuery();
 			System.out.println("Here are all of your following group requests: ");
@@ -293,6 +297,61 @@ public class FaceSpace{
 			} //return to menu
 		} catch (SQLException se){
 			se.printStackTrace();
+		}
+	}
+
+	public static void CreateGroup(String name, String memLim, String description){
+		try{
+			String query = "INSERT INTO groups VALUES( '" + gidIndex + "' , ? , ? , ? )";
+			PreparedStatement pstmt = conn.prepareStatement(query);
+			pstmt.setString(1, memLim);
+			pstmt.setString(2, name);
+			pstmt.setString(3, description);
+			pstmt.executeQuery();
+			//add logged in user to pending, then group
+			query = "INSERT INTO pendingGroupMembers VALUES('" + gidIndex + "', '" + myId + "', 'default')";
+			pstmt = conn.prepareStatement(query);
+			pstmt.executeQuery();
+			query = "INSERT INTO groupMembership VALUES('" + gidIndex + "', '" + myId + "', 'manager')"; 
+			pstmt = conn.prepareStatement(query);
+			pstmt.executeQuery();
+			gidIndex++;
+			System.out.println("Group created!");
+		} catch (SQLException se){
+			se.printStackTrace();
+		}
+	}
+
+	public static void InitiateAddingGroup(String userId, String gId, String message){
+		try{
+			//ensure space in group 
+			int remain = -1;
+			String memLimitQuery = "SELECT memberlimit FROM groups WHERE gid= ? ";
+			String countQuery = "SELECT COUNT(*) as cnt FROM groupmembership WHERE gid= ? ";
+			PreparedStatement pstmt = conn.prepareStatement(memLimitQuery);
+			PreparedStatement pstmt2 = conn.prepareStatement(countQuery);
+			pstmt.setString(1, gId);
+			pstmt2.setString(1, gId);
+			ResultSet rs1 = pstmt.executeQuery();
+			ResultSet rs2 = pstmt2.executeQuery();
+			rs1.next();
+			rs2.next();
+			int limit = Integer.parseInt(rs1.getString("memberlimit"));
+			int cnt = Integer.parseInt(rs2.getString("cnt"));
+			remain = limit-cnt;
+			if(remain > 0){
+				String query = "INSERT INTO pendingGroupMembers VALUES( ? , ? , ?)";
+				PreparedStatement pstmt3 = conn.prepareStatement(query);
+				pstmt3.setString(1, gId);
+				pstmt3.setString(2, userId);
+				pstmt3.setString(3, message);
+				pstmt3.executeQuery();
+				System.out.println("User added to pending group members!"); 
+			}
+		} catch (SQLException se){
+			se.printStackTrace();
+		} catch (NumberFormatException e){
+			System.out.println("Invalid number for group or user!");
 		}
 	}
 

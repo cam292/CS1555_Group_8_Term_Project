@@ -245,7 +245,7 @@ public class DataCreation{
 
     for(int i = 1; i <= numGroups; i++){
       StringBuilder query = new StringBuilder("INSERT INTO groups VALUES (");
-      query.append("'" + i + "', '" + groupNames[i-1] + "', '" + groupDesc[i-1] + "');");
+      query.append("'" + i + "', '5', " + groupNames[i-1] + "', '" + groupDesc[i-1] + "');");
       System.out.println(query.toString());
       try{
         System.out.println("trying to write to file");
@@ -259,7 +259,7 @@ public class DataCreation{
 
   public static void insertGroupMembers(FileWriter writer, int numToAdd){
     String[] msg = {"can i pls be in group", "Add me", "Can I be added please?", "Hey can I get in?", "Whats with all the hoopla?"};
-    String[] roles = {"admin", "user"};
+    String[] roles = {"manager", "user"};
 
     for(int i = 0; i <= numGroups; i++){
       gidIds.add(i, new ArrayList<Integer>()); //initialize arrays
