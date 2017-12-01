@@ -22,6 +22,8 @@ public class FaceSpace{
 	static String myId;
 	static String myName;
 
+	static ArrayList<ArrayList<String>> degFinal;
+
 	// Input
 	static Scanner scan;
 
@@ -56,20 +58,38 @@ public class FaceSpace{
 		//test functions
 		createUser("John Warwick", "jwarwick@gmail.com", "abab", new java.sql.Date(2017, 12, 5));
 		createUser("Ron Swanson", "rs23@gmail.com", "cbcb", new java.sql.Date(2017, 5, 4));
+		createUser("Beth Joy", "bethj@gmail.com", "cbcb", new java.sql.Date(2017, 5, 5));
+		createUser("Mary Jake", "mary@gmail.com", "cbcb", new java.sql.Date(2015, 5, 5));
+		createUser("Jake Paul", "jp@gmail.com", "cbcb", new java.sql.Date(2014, 4, 4));
 
-		//Login("1", "abab");
-		
-		//InitiateFriendship("2");
+		Login("1", "abab");
+		/*
+		InitiateFriendship("2");
 
 		Login("2", "cbcb");
 
-		//ConfirmFriendship();
-
+		ConfirmFriendship();
+		
+		InitiateFriendship("3");
+		Login("3", "cbcb");
+		ConfirmFriendship();
+		InitiateFriendship("4");
+		Login("4", "cbcb");
+		ConfirmFriendship();
+		*/
 		//DisplayFriends();
 
-		CreateGroup("BFFs4EVA", "5", "We r tha best!");
+		//CreateGroup("BFFs4EVA", "5", "We r tha best!");
 
-		InitiateAddingGroup("1", "1", "Please add John");
+		//InitiateAddingGroup("1", "1", "Please add John");
+
+		//SearchForUser("John 2");
+
+		ThreeDegrees("1", "4");
+		ThreeDegrees("1", "5");
+		ThreeDegrees("4", "2");
+
+		LogOut();
 
 		scan.close();
 	}
@@ -352,6 +372,124 @@ public class FaceSpace{
 			se.printStackTrace();
 		} catch (NumberFormatException e){
 			System.out.println("Invalid number for group or user!");
+		}
+	}
+
+	public static void SearchForUser(String search){
+		try{
+		String[] terms = search.split("\\s+");
+		ArrayList<String> ids = new ArrayList<String>();
+		ArrayList<String> names = new ArrayList<String>();
+		ArrayList<String> emails = new ArrayList<String>();
+		ArrayList<String> dobs = new ArrayList<String>(); 
+		for(String term : terms){
+			term = "'%" + term + "%'";
+			String query = "SELECT userid, name, email, date_of_birth FROM profile WHERE name LIKE " + term + " OR userid LIKE " + term + " OR email LIKE " + term + " OR date_of_birth LIKE " + term + "";
+			//System.out.println(query);
+			PreparedStatement pstmt = conn.prepareStatement(query);
+			ResultSet rs = pstmt.executeQuery();
+			while(rs.next()){
+				if(!ids.contains(rs.getString("userid"))){
+					ids.add(rs.getString("userid"));
+					names.add(rs.getString("name"));
+					emails.add(rs.getString("email"));
+					dobs.add(rs.getString("date_of_birth"));
+				}
+			}			
+		}
+		System.out.println("Search results: ");
+		for(int i = 0; i < ids.size(); i++){
+			System.out.println("Id: " + ids.get(i) + "\t\tName: " + names.get(i) + "\t\tEmail: " + emails.get(i) + "\t\tDate of birth: " + dobs.get(i));
+		}
+		} catch (SQLException se){
+			se.printStackTrace();
+		}
+
+	}
+
+	public static void ThreeDegrees(String A, String B){
+		//A and B are ids
+		//try{
+			//generate all permutations
+			ArrayList<String> cur = new ArrayList<String>();
+			cur.add(A);
+			degFinal = new ArrayList<ArrayList<String>>();
+			ThreeDegHelper(cur, A, B);
+			//System.out.println(degFinal);
+			//for(int i = 0; i < degFinal.size(); i++){
+			//	System.out.println(degFinal.get(i));
+			//}
+			//test for matches
+			for(int i = 0; i < degFinal.size(); i++){
+				int size = degFinal.get(i).size();
+				if(degFinal.get(i).get(size-1).equals(B)){
+					//MATCH!
+					System.out.println("A path from " + A + " to " + B + " is: " + degFinal.get(i));
+					return;
+				}
+			}
+			System.out.println("No match found between " + A + " and " + B);
+			
+		//} catch (SQLException se){
+		//	se.printStackTrace();
+		//}
+	}
+
+	public static void ThreeDegHelper(ArrayList<String> cur, String A, String B){
+		try {
+		if(cur.size() <= 4 && cur.size() > 0){
+			if(!degFinal.containsAll(cur)){
+				//System.out.println("Adding " + cur);
+				degFinal.add(new ArrayList<String>(cur));
+			}	
+		} else if (cur.size() > 4){
+			return;
+		}
+		//add each user from cur.size()-1's friends to cur where profile isnt already in
+		PreparedStatement pstmt;	
+		if(cur.size() == 0){
+			pstmt = conn.prepareStatement("SELECT userid2 FROM friends WHERE userid1='" + A + "'");
+		} else {
+		//	System.out.println("SELECT userid2 FROM friends where userid1='" + cur.get(cur.size()-1) + "'");
+			pstmt = conn.prepareStatement("SELECT userid2 FROM friends where userid1='" + cur.get(cur.size()-1) + "'");
+		}
+		ResultSet rs = pstmt.executeQuery();
+		while(rs.next()){
+			String id = rs.getString("userid2");
+			//System.out.println(id + " , " + A);
+			if(!cur.contains(id)){
+				if(cur.size() == 0){
+					if(id.equals(A)){
+						cur.add(id);
+						ThreeDegHelper(cur, A, B);
+						cur.remove(id);
+					}	
+				} else {
+					if(!id.equals(A)){
+						cur.add(id);
+						ThreeDegHelper(cur, A, B);
+						cur.remove(id);
+					}
+				}
+			}
+		}
+		} catch (SQLException se){
+			se.printStackTrace();
+		}
+		
+	}
+
+	public static void LogOut(){
+		try {
+			String timeStamp = "TO_TIMESTAMP('" + new SimpleDateFormat("dd-MMM-yy:HH:mm").format(new java.util.Date()) + "', 'DD-MON-YY:HH24:MI')"; 
+			String query = "UPDATE profile SET lastlogin="+timeStamp+" WHERE userid=" + myId;
+			PreparedStatement pstmt=conn.prepareStatement(query);
+			pstmt.executeQuery(); 
+			myId="";
+			myName="";
+			System.out.println("Logged out!");
+		} catch (SQLException se){
+			
 		}
 	}
 
