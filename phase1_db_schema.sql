@@ -158,3 +158,19 @@ BEGIN
    END IF;
 END;
 /
+
+--When a user is deleted from profiles, delete them from all groups and
+--delete messages where both the sender and reciever are deleted
+CREATE OR REPLACE TRIGGER dropUser
+BEFORE DELETE ON profile
+FOR EACH ROW
+BEGIN
+  DELETE FROM pendingGroupmembers p WHERE p.userID = :old.userID;
+  DELETE FROM groupMembership g WHERE g.userID = :old.userID;
+
+  DELETE FROM friends f WHERE f.userID1 = :old.userID OR f.userID2 = :old.userID;
+  DELETE FROM pendingFriends s WHERE s.userID1 = :old.userID OR s.userID2 = :old.userID;
+
+
+END;
+/

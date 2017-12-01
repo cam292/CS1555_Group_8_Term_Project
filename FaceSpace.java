@@ -611,8 +611,22 @@ public class FaceSpace{
 
 	}
 
-	public static void dropUser(){
-
+	public static void dropUser(int userID){
+		try {
+			//Have triggers handle the details of this
+			PreparedStatement pstmt = conn.prepareStatement("DELETE FROM profile WHERE userID = ?");
+			pstmt.setInt(1, userID);
+			pstmt.executeUpdate();
+		} catch(SQLException e1) {
+			System.out.println("SQL Error");
+			while(e1 != null)
+			{
+				System.out.println("Message = "+ e1.getMessage());
+				System.out.println("SQLState = "+ e1.getSQLState());
+				System.out.println("SQLState = "+ e1.getErrorCode());
+				e1 = e1.getNextException();
+			}
+		}
 	}
 
 	public static void LogOut(){
