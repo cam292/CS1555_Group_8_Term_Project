@@ -589,12 +589,26 @@ public class FaceSpace{
 	}
 
 	/*
-	* Just started this one
 	* @param k Number of users to find
 	* @param x Number of months to search
 	*/
 	public static void topMessages(int k, int x){
-		String query = "SELECT * FROM (SELECT * FROM messages GROUP BY toUserID ORDER BY COUNT(toUserID) ASC) S WHERE rownum <= "+ k +" ORDER BY rownum";
+		String query = "SELECT * FROM (SELECT *, COUNT(toUserID) AS numMessages FROM messages WHERE dateSent >= ? GROUP BY toUserID ORDER BY numMessages ASC) WHERE rownum <= "+ k +" ORDER BY rownum";
+		PreparedStatement pstmt = conn.prepareStatement(query);
+
+		Calendar currentDate = Calendar.getInstance();
+		currentDate.add(Calendar.MONTH, -x);
+		java.sql.Date date = new java.sql.Date(currentDate.get(Calendar.YEAR), currentDate.get(Calendar.MONTH), currentDate.get(Calendar.DATE));
+
+		pstmt.setDate(1, date);
+
+		ResultSet rs = pstmt.executeQuery();
+
+		System.out.println("Top "+k+" users to recieve most messages in the past "+x+" months:");
+		while(rs.next()){
+			System.out.println("UserID: "+ rs.getString("toUserID")+ "\t NumMessages: "+rs.getString("numMessages"));
+		}
+
 	}
 
 	public static void dropUser(){
