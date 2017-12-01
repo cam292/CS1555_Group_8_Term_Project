@@ -111,6 +111,21 @@ BEGIN
 END;
 /
 
+--After a message is sent, if it is sent to a group (not a single user), then add all users in that group to the messageRecipient table.
+CREATE OR REPLACE TRIGGER recipientsGroupTrigger
+AFTER INSERT ON messages
+FOR EACH ROW
+BEGIN
+    IF :new.toGroupID IS NOT NULL THEN
+    INSERT INTO messageRecipient VALUES
+        (
+            :new.msgID,
+            (SELECT userID FROM groupMembership WHERE gID= :new.toGroupID)
+        );
+    END IF;
+END;
+/
+
 --When a new entry is added to the friends table, first ensure that they were in pending friends and then remove from the pending friends table.
 CREATE OR REPLACE TRIGGER newFriendTrigger
 BEFORE INSERT ON friends

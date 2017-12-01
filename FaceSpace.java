@@ -5,18 +5,22 @@ import java.text.SimpleDateFormat;
 
 public class FaceSpace{
 	// JDBC driver name and database URL
-	//static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";  
+	//static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
 	static final String DB_URL = "dbc:oracle:thin:@class3.cs.pitt.edu:1521:dbclass";
 
 	static Connection conn = null;
-	
+
 	//  Database credentials
-	static final String USER = "dpd30";
-  	static final String PASS = "3924808"; //please don't steal this lol
-	
+	// static final String USER = "dpd30";
+  // static final String PASS = "3924808"; //please don't steal this lol
+
+	static final String USER = "cam292";
+  static final String PASS = "3917160"; //please don't steal this lol
+
 	// Other variables
 	static int profileIndex = 1;	//should be saved to a file after each use
    	static int gidIndex = 1;
+		static int messageIndex = 1;
 
 	// Logged in user info
 	static String myId;
@@ -42,7 +46,7 @@ public class FaceSpace{
 			//Open a connection
 			System.out.println("Connecting to database...");
 			conn = DriverManager.getConnection(DB_URL,USER,PASS);
-			
+
 			//TODO: put this in logout function
 			//Clean-up environment
 			//conn.close();
@@ -53,7 +57,7 @@ public class FaceSpace{
 			//Handle errors for Class.forName
 			e.printStackTrace();
 		}
-		
+
 		//TODO: create actual menu
 		//test functions
 		createUser("John Warwick", "jwarwick@gmail.com", "abab", new java.sql.Date(2017, 12, 5));
@@ -69,7 +73,7 @@ public class FaceSpace{
 		Login("2", "cbcb");
 
 		ConfirmFriendship();
-		
+
 		InitiateFriendship("3");
 		Login("3", "cbcb");
 		ConfirmFriendship();
@@ -85,15 +89,16 @@ public class FaceSpace{
 
 		//SearchForUser("John 2");
 
-		ThreeDegrees("1", "4");
-		ThreeDegrees("1", "5");
-		ThreeDegrees("4", "2");
+
+		// ThreeDegrees("1", "4");
+		// ThreeDegrees("1", "5");
+		// ThreeDegrees("4", "2");
 
 		LogOut();
 
 		scan.close();
 	}
-	
+
 	public static void createUser(String name, String email, String pass, java.sql.Date dateOfBirth){
 		/* WORKING EXAMPLE
 		String query = "INSERT INTO profile VALUES('" + profileIndex + "', 'Ron Swanson', 'RS23@gmail.com', 'abab', TO_DATE('JUN-13-2009', 'MON-DD-YY'), TO_TIMESTAMP('23-JUN-18:12:23', 'DD-MON-YY:HH24:MI'))";
@@ -105,7 +110,7 @@ public class FaceSpace{
 			e.printStackTrace();
 		}
 		*/
-		String timeStamp = "TO_TIMESTAMP('" + new SimpleDateFormat("dd-MMM-yy:HH:mm").format(new java.util.Date()) + "', 'DD-MON-YY:HH24:MI')"; 
+		String timeStamp = "TO_TIMESTAMP('" + new SimpleDateFormat("dd-MMM-yy:HH:mm").format(new java.util.Date()) + "', 'DD-MON-YY:HH24:MI')";
 		String birth = "TO_DATE('" + new SimpleDateFormat("MMM-dd-yy").format(dateOfBirth) + "', 'MON-DD-YY')";
 		String query = "INSERT INTO profile VALUES( ? , ? , ? , ? , " + birth + " , " + timeStamp + " )"; //this is safe since an sql date has to be passed in, not a string
 		try {
@@ -119,13 +124,13 @@ public class FaceSpace{
 		} catch (SQLException se){
 			se.printStackTrace();
 		}
-		
+
 		profileIndex++;
 	}
-	
+
 	public static void Login(String id, String password){
 		String query = "SELECT * FROM profile WHERE userid= ? AND password= ?";
-		
+
 		//read result set - if we have a match, set the user credentials in this program
 		try {
 			PreparedStatement pstmt = conn.prepareStatement(query);
@@ -143,7 +148,7 @@ public class FaceSpace{
 			pstmt2.setString(2, password);
 			pstmt2.executeQuery();
 			System.out.println("Logged in as " + myName + "!");
-			
+
 		} catch (SQLException se){
 			se.printStackTrace();
 		}
@@ -195,13 +200,13 @@ public class FaceSpace{
 				messages.add(rs.getString("message"));
 				i++;
 			}
-			
+
 			//get pendingGroupMembers where myId in groupMembership and role="manager"
 			query = "SELECT * FROM (SELECT * FROM (SELECT * FROM groupMembership WHERE userid=" + myId + " AND role='manager') g JOIN pendingGroupMembers p ON g.gid=p.gid) n JOIN profile f ON userId=f.userId";
 			pstmt = conn.prepareStatement(query);
 			rs = pstmt.executeQuery();
 			System.out.println("Here are all of your following group requests: ");
-			
+
 			ArrayList<String> gids = new ArrayList<String>();
 			ArrayList<String> gFromIds = new ArrayList<String>();
 			ArrayList<String> gMessages = new ArrayList<String>();
@@ -228,7 +233,7 @@ public class FaceSpace{
 							query2="INSERT INTO friends VALUES('" + myId + "', '" + fromIds.get(acceptNum) + "', " + date + ", '" + messages.get(acceptNum) + "')";
 							PreparedStatement pstmt3=conn.prepareStatement("INSERT INTO friends VALUES('" + fromIds.get(acceptNum) + "', '" + myId + "', " + date + ", '" + messages.get(acceptNum) + "')");
 							pstmt3.executeQuery();
-							
+
 						} else {
 							query2="INSERT INTO groupMembership VALUES('" + gids.get(acceptNum) + "', '" + gFromIds.get(acceptNum) + "', 'member')";
 						}
@@ -254,11 +259,11 @@ public class FaceSpace{
 					pstmt2.executeQuery();
 				}
 			}
-	
+
 			} //finished
 
 			System.out.println("Done adding. All other requests have been rejected.");
-			//run delete from statements		
+			//run delete from statements
 			String delQuery = "DELETE FROM pendingFriends p WHERE p.toId=" + myId;
 			PreparedStatement delPrep = conn.prepareStatement(delQuery);
 			delPrep.executeQuery();
@@ -281,7 +286,7 @@ public class FaceSpace{
 			ArrayList<String> friendEmails = new ArrayList<String>();
 			ArrayList<String> friendDob = new ArrayList<String>();
 			while(rs.next()){
-				System.out.println("Id: " + rs.getString("userid2") + "\t\tName: " + rs.getString("name")); 
+				System.out.println("Id: " + rs.getString("userid2") + "\t\tName: " + rs.getString("name"));
 				friendIds.add(rs.getString("userid2"));
 				friendNames.add(rs.getString("name"));
 				friendEmails.add(rs.getString("email"));
@@ -332,7 +337,7 @@ public class FaceSpace{
 			query = "INSERT INTO pendingGroupMembers VALUES('" + gidIndex + "', '" + myId + "', 'default')";
 			pstmt = conn.prepareStatement(query);
 			pstmt.executeQuery();
-			query = "INSERT INTO groupMembership VALUES('" + gidIndex + "', '" + myId + "', 'manager')"; 
+			query = "INSERT INTO groupMembership VALUES('" + gidIndex + "', '" + myId + "', 'manager')";
 			pstmt = conn.prepareStatement(query);
 			pstmt.executeQuery();
 			gidIndex++;
@@ -344,7 +349,7 @@ public class FaceSpace{
 
 	public static void InitiateAddingGroup(String userId, String gId, String message){
 		try{
-			//ensure space in group 
+			//ensure space in group
 			int remain = -1;
 			String memLimitQuery = "SELECT memberlimit FROM groups WHERE gid= ? ";
 			String countQuery = "SELECT COUNT(*) as cnt FROM groupmembership WHERE gid= ? ";
@@ -366,12 +371,116 @@ public class FaceSpace{
 				pstmt3.setString(2, userId);
 				pstmt3.setString(3, message);
 				pstmt3.executeQuery();
-				System.out.println("User added to pending group members!"); 
+				System.out.println("User added to pending group members!");
 			}
 		} catch (SQLException se){
 			se.printStackTrace();
 		} catch (NumberFormatException e){
 			System.out.println("Invalid number for group or user!");
+		}
+	}
+
+	public static void sendMessageToUser(String toId){
+		//get name of user to send message to
+		String query = "SELECT name FROM profile WHERE userID='"+toId+"'";
+		PreparedStatement pstmt = conn.prepareStatement(query);
+		ResultSet rs = pstmt.executeQuery();
+		if(rs.next()){
+			if(rs.getString("name") != ""){
+				System.out.println("Enter your message to "+rs.getString("name")+": ");
+			} else {
+				System.out.println("That user doesn't exist!");
+			}
+		}
+
+		String message = scan.nextLine();
+		String timestamp = "TO_TIMESTAMP('" + new SimpleDateFormat("dd-MMM-yy:HH:mm").format(new java.util.Date()) + "', 'DD-MON-YY:HH24:MI')";
+
+		query = "INSERT INTO messages VALUES(?, ?, ?, ?, ?, ?)";
+		pstmt = conn.prepareStatement(query);
+		pstmt.setString(1, Integer.toString(messageIndex));
+		pstmt.setString(2, myId);
+		pstmt.setString(3, message);
+		pstmt.setString(4, toId);
+		pstmt.setString(5, "NULL");
+		pstmt.setString(6, timestamp);
+		try{
+			pstmt.executeUpdate();
+			System.out.println("Message sent successfully!");
+		} catch(SQLException e1){
+			while(e1 != null){
+				System.out.println("Error: "+e1.toString());
+				e1 = e1.getNextException();
+			}
+		}
+	}
+
+	public static void sendMessageToGroup(String toId){
+		//get name of group to send message to
+		String query = "SELECT name FROM groups WHERE gID='"+toId+"'";
+		PreparedStatement pstmt = conn.prepareStatement(query);
+		ResultSet rs = pstmt.executeQuery();
+		if(rs.next()){
+			if(rs.getString("name") != ""){
+				System.out.println("Enter your message to members of "+rs.getString("name")+": ");
+			} else {
+				System.out.println("That group doesn't exist!");
+			}
+		}
+
+		String message = scan.nextLine();
+		String timestamp = "TO_TIMESTAMP('" + new SimpleDateFormat("dd-MMM-yy:HH:mm").format(new java.util.Date()) + "', 'DD-MON-YY:HH24:MI')";
+
+		query = "INSERT INTO messages VALUES(?, ?, ?, ?, ?, ?)";
+		pstmt = conn.prepareStatement(query);
+		pstmt.setString(1, Integer.toString(messageIndex));
+		pstmt.setString(2, myId);
+		pstmt.setString(3, message);
+		pstmt.setString(4, "NULL");
+		pstmt.setString(5, toId);
+		pstmt.setString(6, timestamp);
+		try{
+			pstmt.executeUpdate();
+			System.out.println("Message sent successfully!");
+		} catch(SQLException e1){
+			while(e1 != null){
+				System.out.println("Error: "+e1.toString());
+				e1 = e1.getNextException();
+			}
+		}
+	}
+
+	public static void displayMessages(){
+		String query = "SELECT * FROM messages m JOIN messageRecipient r ON m.msgID=r.msgID WHERE r.userID=" + myId;
+
+		PreparedStatement pstmt = conn.prepareStatement(query);
+		ResultSet rs = pstmt.executeQuery();
+
+		System.out.println("** All messages sent to you **");
+		while(rs.next()){
+			query = "SELECT name FROM profile WHERE userID="+rs.getString("fromID");
+			pstmt = conn.prepareStatement(query);
+			ResultSet rs1 = pstmt.executeQuery();
+
+			System.out.println("\nFrom " + rs1.getString("name") + " on " + rs.getString("dateSent") + ": ");
+			System.out.println(rs.getString("message"));
+		}
+	}
+
+	public static void displayNewMessages(){
+		String query = "SELECT fromID, message, dateSent FROM (messages m JOIN messageRecipient r ON (m.toUserID = r.userID)) WHERE m.toUserID = "+myId+" and dateSent > (SELECT lastlogin FROM profile WHERE userID="+myId+") ORDER BY dateSent DESC";
+
+		PreparedStatement pstmt = conn.prepareStatement(query);
+		ResultSet rs = pstmt.executeQuery();
+
+		System.out.println("** All new messages since last login **");
+		while(rs.next()){
+			query = "SELECT name FROM profile WHERE userID="+rs.getString("fromID");
+			pstmt = conn.prepareStatement(query);
+			ResultSet rs1 = pstmt.executeQuery();
+
+			System.out.println("\nFrom " + rs1.getString("name") + " on " + rs.getString("dateSent") + ": ");
+			System.out.println(rs.getString("message"));
 		}
 	}
 
@@ -381,7 +490,7 @@ public class FaceSpace{
 		ArrayList<String> ids = new ArrayList<String>();
 		ArrayList<String> names = new ArrayList<String>();
 		ArrayList<String> emails = new ArrayList<String>();
-		ArrayList<String> dobs = new ArrayList<String>(); 
+		ArrayList<String> dobs = new ArrayList<String>();
 		for(String term : terms){
 			term = "'%" + term + "%'";
 			String query = "SELECT userid, name, email, date_of_birth FROM profile WHERE name LIKE " + term + " OR userid LIKE " + term + " OR email LIKE " + term + " OR date_of_birth LIKE " + term + "";
@@ -395,7 +504,7 @@ public class FaceSpace{
 					emails.add(rs.getString("email"));
 					dobs.add(rs.getString("date_of_birth"));
 				}
-			}			
+			}
 		}
 		System.out.println("Search results: ");
 		for(int i = 0; i < ids.size(); i++){
@@ -429,7 +538,7 @@ public class FaceSpace{
 				}
 			}
 			System.out.println("No match found between " + A + " and " + B);
-			
+
 		//} catch (SQLException se){
 		//	se.printStackTrace();
 		//}
@@ -441,12 +550,12 @@ public class FaceSpace{
 			if(!degFinal.containsAll(cur)){
 				//System.out.println("Adding " + cur);
 				degFinal.add(new ArrayList<String>(cur));
-			}	
+			}
 		} else if (cur.size() > 4){
 			return;
 		}
 		//add each user from cur.size()-1's friends to cur where profile isnt already in
-		PreparedStatement pstmt;	
+		PreparedStatement pstmt;
 		if(cur.size() == 0){
 			pstmt = conn.prepareStatement("SELECT userid2 FROM friends WHERE userid1='" + A + "'");
 		} else {
@@ -463,7 +572,7 @@ public class FaceSpace{
 						cur.add(id);
 						ThreeDegHelper(cur, A, B);
 						cur.remove(id);
-					}	
+					}
 				} else {
 					if(!id.equals(A)){
 						cur.add(id);
@@ -476,20 +585,33 @@ public class FaceSpace{
 		} catch (SQLException se){
 			se.printStackTrace();
 		}
-		
+
+	}
+
+	/*
+	* Just started this one
+	* @param k Number of users to find
+	* @param x Number of months to search
+	*/
+	public static void topMessages(int k, int x){
+		String query = "SELECT * FROM (SELECT * FROM messages GROUP BY toUserID ORDER BY COUNT(toUserID) ASC) S WHERE rownum <= "+ k +" ORDER BY rownum";
+	}
+
+	public static void dropUser(){
+
 	}
 
 	public static void LogOut(){
 		try {
-			String timeStamp = "TO_TIMESTAMP('" + new SimpleDateFormat("dd-MMM-yy:HH:mm").format(new java.util.Date()) + "', 'DD-MON-YY:HH24:MI')"; 
+			String timeStamp = "TO_TIMESTAMP('" + new SimpleDateFormat("dd-MMM-yy:HH:mm").format(new java.util.Date()) + "', 'DD-MON-YY:HH24:MI')";
 			String query = "UPDATE profile SET lastlogin="+timeStamp+" WHERE userid=" + myId;
 			PreparedStatement pstmt=conn.prepareStatement(query);
-			pstmt.executeQuery(); 
+			pstmt.executeQuery();
 			myId="";
 			myName="";
 			System.out.println("Logged out!");
 		} catch (SQLException se){
-			
+
 		}
 	}
 
