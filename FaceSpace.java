@@ -11,16 +11,16 @@ public class FaceSpace{
 	static Connection conn = null;
 
 	//  Database credentials
-	// static final String USER = "dpd30";
-  // static final String PASS = "3924808"; //please don't steal this lol
+	static final String USER = "dpd30";
+ 	static final String PASS = "3924808"; //please don't steal this lol
 
-	static final String USER = "cam292";
-  static final String PASS = "3917160"; //please don't steal this lol
+	//static final String USER = "cam292";
+  	//static final String PASS = "3917160"; //please don't steal this lol
 
 	// Other variables
-	static int profileIndex = 1;	//should be saved to a file after each use
-   	static int gidIndex = 1;
-		static int messageIndex = 1;
+	//static int profileIndex = 1;	//migrated to getting index at runtime
+   	//static int gidIndex = 1;
+	//static int messageIndex = 1;
 
 	// Logged in user info
 	static String myId;
@@ -87,8 +87,9 @@ public class FaceSpace{
 
 		//InitiateAddingGroup("1", "1", "Please add John");
 
-		//SearchForUser("John 2");
+		SearchForUser("John 2");
 
+		sendMessageToUser("2");
 
 		// ThreeDegrees("1", "4");
 		// ThreeDegrees("1", "5");
@@ -115,17 +116,27 @@ public class FaceSpace{
 		String query = "INSERT INTO profile VALUES( ? , ? , ? , ? , " + birth + " , " + timeStamp + " )"; //this is safe since an sql date has to be passed in, not a string
 		try {
 			PreparedStatement pstmt = conn.prepareStatement(query);
-			pstmt.setString(1, Integer.toString(profileIndex));
+
+			int index = 0;
+			PreparedStatement cntstmnt = conn.prepareStatement("SELECT COUNT(*) AS cnt FROM profile");
+			ResultSet cntSet = cntstmnt.executeQuery();
+			while(cntSet.next()){
+				index = cntSet.getInt("cnt") + 1;
+			}
+			pstmt.setString(1, Integer.toString(index));
 			pstmt.setString(2, name);
 			pstmt.setString(3, email);
 			pstmt.setString(4, pass);
 			//System.out.println("birth: " + birth + ", timestamp: " + timeStamp);
 			pstmt.executeUpdate();
 		} catch (SQLException se){
-			se.printStackTrace();
+			while(se != null){
+				System.out.println("Error: "+se.toString());
+				se = se.getNextException();
+			}
 		}
 
-		profileIndex++;
+		//profileIndex++;
 	}
 
 	public static void Login(String id, String password){
@@ -147,6 +158,10 @@ public class FaceSpace{
 			pstmt2.setString(1, id);
 			pstmt2.setString(2, password);
 			pstmt2.executeQuery();
+			if(myName == null || myName == ""){
+				System.out.println("Failed to login!");
+				return;
+			}
 			System.out.println("Logged in as " + myName + "!");
 
 		} catch (SQLException se){
@@ -175,7 +190,10 @@ public class FaceSpace{
 				System.out.println("Request not sent!");
 			}
 		} catch(SQLException se){
-			se.printStackTrace();
+			while(se != null){
+				System.out.println("Error: "+se.toString());
+				se = se.getNextException();
+			}
 		}
 	}
 
@@ -269,7 +287,10 @@ public class FaceSpace{
 			delPrep.executeQuery();
 
 		} catch (SQLException se){
-			se.printStackTrace();
+			while(se != null){
+				System.out.println("Error: "+se.toString());
+				se = se.getNextException();
+			}
 		}
 	}
 
@@ -321,29 +342,41 @@ public class FaceSpace{
 			}
 			} //return to menu
 		} catch (SQLException se){
-			se.printStackTrace();
+			while(se != null){
+				System.out.println("Error: "+se.toString());
+				se = se.getNextException();
+			}
 		}
 	}
 
 	public static void CreateGroup(String name, String memLim, String description){
 		try{
-			String query = "INSERT INTO groups VALUES( '" + gidIndex + "' , ? , ? , ? )";
+			int index = 0;
+			PreparedStatement cntstmnt = conn.prepareStatement("SELECT COUNT(*) AS cnt FROM groups");
+			ResultSet cntSet = cntstmnt.executeQuery();
+			while(cntSet.next()){
+				index = cntSet.getInt("cnt") + 1;
+			}
+			String query = "INSERT INTO groups VALUES( '" + index + "' , ? , ? , ? )";
 			PreparedStatement pstmt = conn.prepareStatement(query);
 			pstmt.setString(1, memLim);
 			pstmt.setString(2, name);
 			pstmt.setString(3, description);
 			pstmt.executeQuery();
 			//add logged in user to pending, then group
-			query = "INSERT INTO pendingGroupMembers VALUES('" + gidIndex + "', '" + myId + "', 'default')";
+			query = "INSERT INTO pendingGroupMembers VALUES('" + index + "', '" + myId + "', 'default')";
 			pstmt = conn.prepareStatement(query);
 			pstmt.executeQuery();
-			query = "INSERT INTO groupMembership VALUES('" + gidIndex + "', '" + myId + "', 'manager')";
+			query = "INSERT INTO groupMembership VALUES('" + index + "', '" + myId + "', 'manager')";
 			pstmt = conn.prepareStatement(query);
 			pstmt.executeQuery();
-			gidIndex++;
+			//gidIndex++;
 			System.out.println("Group created!");
 		} catch (SQLException se){
-			se.printStackTrace();
+			while(se != null){
+				System.out.println("Error: "+se.toString());
+				se = se.getNextException();
+			}
 		}
 	}
 
@@ -374,14 +407,26 @@ public class FaceSpace{
 				System.out.println("User added to pending group members!");
 			}
 		} catch (SQLException se){
-			se.printStackTrace();
+			while(se != null){
+				System.out.println("Error: "+se.toString());
+				se = se.getNextException();
+			}
 		} catch (NumberFormatException e){
 			System.out.println("Invalid number for group or user!");
 		}
 	}
 
 	public static void sendMessageToUser(String toId){
+		try {
 		//get name of user to send message to
+
+		int index = 0;
+		PreparedStatement cntstmnt = conn.prepareStatement("SELECT COUNT(*) AS cnt FROM profile");
+		ResultSet cntSet = cntstmnt.executeQuery();
+		while(cntSet.next()){
+			index = cntSet.getInt("cnt") + 1;
+		}
+
 		String query = "SELECT name FROM profile WHERE userID='"+toId+"'";
 		PreparedStatement pstmt = conn.prepareStatement(query);
 		ResultSet rs = pstmt.executeQuery();
@@ -395,18 +440,23 @@ public class FaceSpace{
 
 		String message = scan.nextLine();
 		String timestamp = "TO_TIMESTAMP('" + new SimpleDateFormat("dd-MMM-yy:HH:mm").format(new java.util.Date()) + "', 'DD-MON-YY:HH24:MI')";
-
-		query = "INSERT INTO messages VALUES(?, ?, ?, ?, ?, ?)";
+		//String timeStamp = "TO_TIMESTAMP('" + new SimpleDateFormat("dd-MMM-yy:HH:mm").format(new java.util.Date()) + "', 'DD-MON-YY:HH24:MI')";
+		query = "INSERT INTO messages VALUES(?, ?, ?, ?, ?, " + timestamp + ")";
+		//System.out.println("INSERT INTO MESSAGES VALUES(" + Integer.toString(index) + ", " + myId + ", "+ message + ", " + toId +", NULL, " + timeStamp);
 		pstmt = conn.prepareStatement(query);
-		pstmt.setString(1, Integer.toString(messageIndex));
+		pstmt.setString(1, Integer.toString(index));
 		pstmt.setString(2, myId);
 		pstmt.setString(3, message);
 		pstmt.setString(4, toId);
 		pstmt.setString(5, "NULL");
-		pstmt.setString(6, timestamp);
-		try{
-			pstmt.executeUpdate();
-			System.out.println("Message sent successfully!");
+		/*pstmt.setString(1, "100");
+		pstmt.setString(2, "1");
+		pstmt.setString(3, "hey");
+		pstmt.setString(4, "2");
+		pstmt.setString(5, "NULL");*/
+		//pstmt.setString(6, timestamp);
+		pstmt.executeUpdate();
+		System.out.println("Message sent successfully!");
 		} catch(SQLException e1){
 			while(e1 != null){
 				System.out.println("Error: "+e1.toString());
@@ -417,6 +467,13 @@ public class FaceSpace{
 
 	public static void sendMessageToGroup(String toId){
 		//get name of group to send message to
+		try{
+		int index = 0;
+		PreparedStatement cntstmnt = conn.prepareStatement("SELECT COUNT(*) AS cnt FROM profile");
+		ResultSet cntSet = cntstmnt.executeQuery();
+		while(cntSet.next()){
+			index = cntSet.getInt("cnt") + 1;
+		}
 		String query = "SELECT name FROM groups WHERE gID='"+toId+"'";
 		PreparedStatement pstmt = conn.prepareStatement(query);
 		ResultSet rs = pstmt.executeQuery();
@@ -431,17 +488,16 @@ public class FaceSpace{
 		String message = scan.nextLine();
 		String timestamp = "TO_TIMESTAMP('" + new SimpleDateFormat("dd-MMM-yy:HH:mm").format(new java.util.Date()) + "', 'DD-MON-YY:HH24:MI')";
 
-		query = "INSERT INTO messages VALUES(?, ?, ?, ?, ?, ?)";
+		query = "INSERT INTO messages VALUES(?, ?, ?, ?, ?, " + timestamp + ")";
 		pstmt = conn.prepareStatement(query);
-		pstmt.setString(1, Integer.toString(messageIndex));
+		pstmt.setString(1, Integer.toString(index));
 		pstmt.setString(2, myId);
 		pstmt.setString(3, message);
 		pstmt.setString(4, "NULL");
 		pstmt.setString(5, toId);
-		pstmt.setString(6, timestamp);
-		try{
-			pstmt.executeUpdate();
-			System.out.println("Message sent successfully!");
+		//pstmt.setString(6, timestamp);
+		pstmt.executeUpdate();
+		System.out.println("Message sent successfully!");
 		} catch(SQLException e1){
 			while(e1 != null){
 				System.out.println("Error: "+e1.toString());
@@ -451,6 +507,7 @@ public class FaceSpace{
 	}
 
 	public static void displayMessages(){
+		try{
 		String query = "SELECT * FROM messages m JOIN messageRecipient r ON m.msgID=r.msgID WHERE r.userID=" + myId;
 
 		PreparedStatement pstmt = conn.prepareStatement(query);
@@ -465,9 +522,16 @@ public class FaceSpace{
 			System.out.println("\nFrom " + rs1.getString("name") + " on " + rs.getString("dateSent") + ": ");
 			System.out.println(rs.getString("message"));
 		}
+		} catch (SQLException se){
+			while(se != null){
+				System.out.println("Error: "+se.toString());
+				se = se.getNextException();
+			}
+		}
 	}
 
 	public static void displayNewMessages(){
+		try{
 		String query = "SELECT fromID, message, dateSent FROM (messages m JOIN messageRecipient r ON (m.toUserID = r.userID)) WHERE m.toUserID = "+myId+" and dateSent > (SELECT lastlogin FROM profile WHERE userID="+myId+") ORDER BY dateSent DESC";
 
 		PreparedStatement pstmt = conn.prepareStatement(query);
@@ -481,6 +545,12 @@ public class FaceSpace{
 
 			System.out.println("\nFrom " + rs1.getString("name") + " on " + rs.getString("dateSent") + ": ");
 			System.out.println(rs.getString("message"));
+		}
+		} catch (SQLException se){
+			while(se != null){
+				System.out.println("Error: "+se.toString());
+				se = se.getNextException();
+			}
 		}
 	}
 
@@ -511,7 +581,10 @@ public class FaceSpace{
 			System.out.println("Id: " + ids.get(i) + "\t\tName: " + names.get(i) + "\t\tEmail: " + emails.get(i) + "\t\tDate of birth: " + dobs.get(i));
 		}
 		} catch (SQLException se){
-			se.printStackTrace();
+			while(se != null){
+				System.out.println("Error: "+se.toString());
+				se = se.getNextException();
+			}
 		}
 
 	}
@@ -583,7 +656,10 @@ public class FaceSpace{
 			}
 		}
 		} catch (SQLException se){
-			se.printStackTrace();
+			while(se != null){
+				System.out.println("Error: "+se.toString());
+				se = se.getNextException();
+			}
 		}
 
 	}
@@ -593,6 +669,7 @@ public class FaceSpace{
 	* @param x Number of months to search
 	*/
 	public static void topMessages(int k, int x){
+		try {
 		String query = "SELECT * FROM (SELECT *, COUNT(toUserID) AS numMessages FROM messages WHERE dateSent >= ? GROUP BY toUserID ORDER BY numMessages ASC) WHERE rownum <= "+ k +" ORDER BY rownum";
 		PreparedStatement pstmt = conn.prepareStatement(query);
 
@@ -607,6 +684,12 @@ public class FaceSpace{
 		System.out.println("Top "+k+" users to recieve most messages in the past "+x+" months:");
 		while(rs.next()){
 			System.out.println("UserID: "+ rs.getString("toUserID")+ "\t NumMessages: "+rs.getString("numMessages"));
+		}
+		} catch (SQLException se){
+			while(se != null){
+				System.out.println("Error: "+se.toString());
+				se = se.getNextException();
+			}
 		}
 
 	}
@@ -639,7 +722,10 @@ public class FaceSpace{
 			myName="";
 			System.out.println("Logged out!");
 		} catch (SQLException se){
-
+			while(se != null){
+				System.out.println("Error: "+se.toString());
+				se = se.getNextException();
+			}
 		}
 	}
 
