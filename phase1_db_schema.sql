@@ -169,8 +169,9 @@ BEGIN
   DELETE FROM groupMembership g WHERE g.userID = :old.userID;
 
   DELETE FROM friends f WHERE f.userID1 = :old.userID OR f.userID2 = :old.userID;
-  DELETE FROM pendingFriends s WHERE s.userID1 = :old.userID OR s.userID2 = :old.userID;
+  DELETE FROM pendingFriends s WHERE s.fromID = :old.userID OR s.toID = :old.userID;
 
-
+  DELETE FROM messages WHERE msgID = (SELECT msgID FROM messages m WHERE m.fromID=:old.userID AND m.toUserID IS NOT NULL AND m.toUserID NOT IN (SELECT userID from profile));
+  DELETE FROM messages WHERE msgID = (SELECT msgID FROM messages m JOIN groupMembership g ON m.toGroupID=g.gID WHERE m.fromID=:old.userID AND (SELECT COUNT(*) FROM messages m JOIN groupMembership g ON m.toGroupID=g.gID WHERE m.fromID=:old.userID)=0);
 END;
 /
