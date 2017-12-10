@@ -21,3 +21,9 @@ SearchForUser: just searches for each term in the input delimited by spaces
 ThreeDegrees: starting from user A, creates all permutations of possible paths (where the next user in the path has to be a friend of the previous user). After all permutations are created, searches them for where the last user is B. If the last user is B, a match is found
 
 Logout: Stores the timestamp and removes name and id stored in program
+
+
+---PART 3 NOTES
+
+compile with javac *.java and run with java FSDriver
+There is also a testing function in FaceSpace.java that can be uncommented and run from the main function

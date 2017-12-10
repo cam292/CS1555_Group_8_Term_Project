@@ -58,16 +58,22 @@ public class FaceSpace{
 			e.printStackTrace();
 		}
 
-		//TODO: create actual menu
-		//test functions
+		//TestFunctions();
+
+		//scan.close();
+	}
+
+	public static void TestFunctions(){
+	
 		createUser("John Warwick", "jwarwick@gmail.com", "abab", new java.sql.Date(2017, 12, 5));
 		createUser("Ron Swanson", "rs23@gmail.com", "cbcb", new java.sql.Date(2017, 5, 4));
-		createUser("Beth Joy", "bethj@gmail.com", "cbcb", new java.sql.Date(2017, 5, 5));
+		
+		/*createUser("Beth Joy", "bethj@gmail.com", "cbcb", new java.sql.Date(2017, 5, 5));
 		createUser("Mary Jake", "mary@gmail.com", "cbcb", new java.sql.Date(2015, 5, 5));
 		createUser("Jake Paul", "jp@gmail.com", "cbcb", new java.sql.Date(2014, 4, 4));
 
 		Login("1", "abab");
-		/*
+		
 		InitiateFriendship("2");
 
 		Login("2", "cbcb");
@@ -87,17 +93,16 @@ public class FaceSpace{
 
 		//InitiateAddingGroup("1", "1", "Please add John");
 
-		SearchForUser("John 2");
+		//SearchForUser("John 2");
 
-		sendMessageToUser("2");
+		//sendMessageToUser("2");
 
 		// ThreeDegrees("1", "4");
 		// ThreeDegrees("1", "5");
 		// ThreeDegrees("4", "2");
 
-		LogOut();
+		LogOut();	
 
-		scan.close();
 	}
 
 	public static void createUser(String name, String email, String pass, java.sql.Date dateOfBirth){
@@ -118,7 +123,7 @@ public class FaceSpace{
 			PreparedStatement pstmt = conn.prepareStatement(query);
 
 			int index = 0;
-			PreparedStatement cntstmnt = conn.prepareStatement("SELECT COUNT(*) AS cnt FROM profile");
+			PreparedStatement cntstmnt = conn.prepareStatement("SELECT MAX(userid) AS cnt FROM profile");
 			ResultSet cntSet = cntstmnt.executeQuery();
 			while(cntSet.next()){
 				index = cntSet.getInt("cnt") + 1;
@@ -129,6 +134,7 @@ public class FaceSpace{
 			pstmt.setString(4, pass);
 			//System.out.println("birth: " + birth + ", timestamp: " + timeStamp);
 			pstmt.executeUpdate();
+			System.out.println("Your user id is " + Integer.toString(index) + ", please note this down.");
 		} catch (SQLException se){
 			while(se != null){
 				System.out.println("Error: "+se.toString());
@@ -352,7 +358,7 @@ public class FaceSpace{
 	public static void CreateGroup(String name, String memLim, String description){
 		try{
 			int index = 0;
-			PreparedStatement cntstmnt = conn.prepareStatement("SELECT COUNT(*) AS cnt FROM groups");
+			PreparedStatement cntstmnt = conn.prepareStatement("SELECT MAX(gid) AS cnt FROM groups");
 			ResultSet cntSet = cntstmnt.executeQuery();
 			while(cntSet.next()){
 				index = cntSet.getInt("cnt") + 1;
@@ -371,7 +377,7 @@ public class FaceSpace{
 			pstmt = conn.prepareStatement(query);
 			pstmt.executeQuery();
 			//gidIndex++;
-			System.out.println("Group created!");
+			System.out.println("Group created! The id is " + index + ", please note this down.");
 		} catch (SQLException se){
 			while(se != null){
 				System.out.println("Error: "+se.toString());
@@ -421,7 +427,7 @@ public class FaceSpace{
 		//get name of user to send message to
 
 		int index = 0;
-		PreparedStatement cntstmnt = conn.prepareStatement("SELECT COUNT(*) AS cnt FROM profile");
+		PreparedStatement cntstmnt = conn.prepareStatement("SELECT MAX(msgid) AS cnt FROM messages");
 		ResultSet cntSet = cntstmnt.executeQuery();
 		while(cntSet.next()){
 			index = cntSet.getInt("cnt") + 1;
@@ -469,7 +475,7 @@ public class FaceSpace{
 		//get name of group to send message to
 		try{
 		int index = 0;
-		PreparedStatement cntstmnt = conn.prepareStatement("SELECT COUNT(*) AS cnt FROM profile");
+		PreparedStatement cntstmnt = conn.prepareStatement("SELECT MAX(msgid) AS cnt FROM messages");
 		ResultSet cntSet = cntstmnt.executeQuery();
 		while(cntSet.next()){
 			index = cntSet.getInt("cnt") + 1;
@@ -712,20 +718,23 @@ public class FaceSpace{
 		}
 	}
 
-	public static void LogOut(){
+	public static int LogOut(){
 		try {
 			String timeStamp = "TO_TIMESTAMP('" + new SimpleDateFormat("dd-MMM-yy:HH:mm").format(new java.util.Date()) + "', 'DD-MON-YY:HH24:MI')";
 			String query = "UPDATE profile SET lastlogin="+timeStamp+" WHERE userid=" + myId;
 			PreparedStatement pstmt=conn.prepareStatement(query);
 			pstmt.executeQuery();
-			myId="";
+			int retId = Integer.parseInt(myId);
 			myName="";
-			System.out.println("Logged out!");
+			myId="";
+			//System.out.println("Logged out!");
+			return retId;
 		} catch (SQLException se){
 			while(se != null){
 				System.out.println("Error: "+se.toString());
 				se = se.getNextException();
 			}
+			return -1;
 		}
 	}
 
