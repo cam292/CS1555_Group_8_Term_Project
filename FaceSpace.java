@@ -451,7 +451,7 @@ public class FaceSpace{
 			if(index !=0){
 				index += 1;
 			}
-			System.out.println(index);
+			//System.out.println(index);
 		}
 
 		String query = "SELECT name FROM profile WHERE userID='"+toId+"'";
