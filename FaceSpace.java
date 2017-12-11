@@ -64,16 +64,16 @@ public class FaceSpace{
 	}
 
 	public static void TestFunctions(){
-	
+
 		createUser("John Warwick", "jwarwick@gmail.com", "abab", new java.sql.Date(2017, 12, 5));
 		createUser("Ron Swanson", "rs23@gmail.com", "cbcb", new java.sql.Date(2017, 5, 4));
-		
+
 		/*createUser("Beth Joy", "bethj@gmail.com", "cbcb", new java.sql.Date(2017, 5, 5));
 		createUser("Mary Jake", "mary@gmail.com", "cbcb", new java.sql.Date(2015, 5, 5));
 		createUser("Jake Paul", "jp@gmail.com", "cbcb", new java.sql.Date(2014, 4, 4));
 
 		Login("1", "abab");
-		
+
 		InitiateFriendship("2");
 
 		Login("2", "cbcb");
@@ -101,7 +101,7 @@ public class FaceSpace{
 		// ThreeDegrees("1", "5");
 		// ThreeDegrees("4", "2");
 
-		LogOut();	
+		LogOut();
 
 	}
 
@@ -145,7 +145,7 @@ public class FaceSpace{
 		//profileIndex++;
 	}
 
-	public static void Login(String id, String password){
+	public static boolean Login(String id, String password){
 		String query = "SELECT * FROM profile WHERE userid= ? AND password= ?";
 
 		//read result set - if we have a match, set the user credentials in this program
@@ -166,13 +166,13 @@ public class FaceSpace{
 			pstmt2.executeQuery();
 			if(myName == null || myName == ""){
 				System.out.println("Failed to login!");
-				return;
+				return false;
 			}
 			System.out.println("Logged in as " + myName + "!");
-
 		} catch (SQLException se){
 			se.printStackTrace();
 		}
+		return true;
 	}
 
 	public static void InitiateFriendship(String toId){

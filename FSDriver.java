@@ -4,11 +4,11 @@ import java.sql.*;
 import java.text.SimpleDateFormat;
 
 public class FSDriver {
-	
+
 	static boolean loggedIn = false;
 	static int exit = 0;
 
-	public static void main(String[] args){	
+	public static void main(String[] args){
 		FaceSpace.main(new String[0]);
 		Scanner scan = new Scanner(System.in);
 		while(exit != 1){
@@ -30,19 +30,22 @@ public class FSDriver {
 				System.out.println("Please enter the day you were born (number): ");
 				String dy = scan.nextLine();
 				FaceSpace.createUser(name, email, pass, new java.sql.Date(Integer.parseInt(yr), Integer.parseInt(mo), Integer.parseInt(dy)));
-				
+
 			} else if (input.equals("2")){
 				System.out.println("Please enter your userid: ");
 				String id = scan.nextLine();
 				System.out.println("Please enter your password: ");
 				String pass = scan.nextLine();
-				FaceSpace.Login(id, pass);
-				loggedIn=true;
+				if(FaceSpace.Login(id, pass)){
+					loggedIn=true;
+				} else {
+					loggedIn=false;
+				}
 			} else if (input.equals("0")){
 				exit = 1;
 			}
 		}
-		
+
 		while(loggedIn){
 
 			System.out.println("Hello! Please select an option from the menu:\n\t1 Initiate Friendship\n\t2 Confirm Friendship\n\t3 Display Friends\n\t4 Create Group\n\t5 Add to Group\n\t6 Message User\n\t7 Message Group\n\t8 Display Messages\n\t9 Display New Messages\n\t10 Search for User\n\t11 Find Friendship Path\n\t99 Delete Profile\n\t0 Log out");
@@ -50,7 +53,7 @@ public class FSDriver {
 			if(input.equals("0")){
 				FaceSpace.LogOut();
 				System.out.println("Logged out!");
-				loggedIn=false;	
+				loggedIn=false;
 			} else if (input.equals("1")){
 				System.out.println("Please enter the id of the user you'd like to send a friend request to:");
 				String id = scan.nextLine();
@@ -105,7 +108,7 @@ public class FSDriver {
 
 		}
 		}
-		
-				
+
+
 	}
 }
