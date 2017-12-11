@@ -134,7 +134,7 @@ public class FaceSpace{
 			ResultSet cntSet = cntstmnt.executeQuery();
 			while(cntSet.next()){
 				index = cntSet.getInt("cnt") + 1;
-				System.out.println("next id: "+index);
+				//System.out.println("next id: "+index);
 			}
 			pstmt.setString(1, Integer.toString(index));
 			pstmt.setString(2, name);
@@ -447,10 +447,7 @@ public class FaceSpace{
 		PreparedStatement cntstmnt = conn.prepareStatement("SELECT MAX(msgID) AS cnt FROM messages");
 		ResultSet cntSet = cntstmnt.executeQuery();
 		while(cntSet.next()){
-			index = cntSet.getInt("cnt");
-			if(index !=0){
-				index += 1;
-			}
+			index = cntSet.getInt("cnt")+1;
 			//System.out.println(index);
 		}
 
