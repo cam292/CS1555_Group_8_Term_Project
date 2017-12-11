@@ -27,3 +27,4 @@ Logout: Stores the timestamp and removes name and id stored in program
 
 compile with javac *.java and run with java FSDriver
 There is also a testing function in FaceSpace.java that can be uncommented and run from the main function
+Just uncomment the line
