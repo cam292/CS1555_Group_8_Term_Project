@@ -539,9 +539,10 @@ public class FaceSpace{
 			query = "SELECT name FROM profile WHERE userID="+rs.getString("fromID");
 			pstmt = conn.prepareStatement(query);
 			ResultSet rs1 = pstmt.executeQuery();
-
-			System.out.println("\nFrom " + rs1.getString("name") + " on " + rs.getString("dateSent") + ": ");
-			System.out.println(rs.getString("message"));
+			while(rs1.next()){
+				System.out.println("\nFrom " + rs1.getString("name") + " on " + rs.getString("dateSent") + ": ");
+				System.out.println(rs.getString("message"));
+			}
 		}
 		} catch (SQLException se){
 			while(se != null){
@@ -563,9 +564,10 @@ public class FaceSpace{
 			query = "SELECT name FROM profile WHERE userID="+rs.getString("fromID");
 			pstmt = conn.prepareStatement(query);
 			ResultSet rs1 = pstmt.executeQuery();
-
-			System.out.println("\nFrom " + rs1.getString("name") + " on " + rs.getString("dateSent") + ": ");
-			System.out.println(rs.getString("message"));
+			while(rs1.next()){
+				System.out.println("\nFrom " + rs1.getString("name") + " on " + rs.getString("dateSent") + ": ");
+				System.out.println(rs.getString("message"));
+			}
 		}
 		} catch (SQLException se){
 			while(se != null){
