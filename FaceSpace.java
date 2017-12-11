@@ -68,7 +68,7 @@ public class FaceSpace{
 		createUser("John Warwick", "jwarwick@gmail.com", "abab", new java.sql.Date(2017, 12, 5));
 		createUser("Ron Swanson", "rs23@gmail.com", "cbcb", new java.sql.Date(2017, 5, 4));
 
-		/*createUser("Beth Joy", "bethj@gmail.com", "cbcb", new java.sql.Date(2017, 5, 5));
+		createUser("Beth Joy", "bethj@gmail.com", "cbcb", new java.sql.Date(2017, 5, 5));
 		createUser("Mary Jake", "mary@gmail.com", "cbcb", new java.sql.Date(2015, 5, 5));
 		createUser("Jake Paul", "jp@gmail.com", "cbcb", new java.sql.Date(2014, 4, 4));
 
@@ -86,24 +86,29 @@ public class FaceSpace{
 		InitiateFriendship("4");
 		Login("4", "cbcb");
 		ConfirmFriendship();
-		*/
-		//DisplayFriends();
+		
+		DisplayFriends();
 
-		//CreateGroup("BFFs4EVA", "5", "We r tha best!");
+		CreateGroup("BFFs4EVA", "5", "We r tha best!");
 
-		//InitiateAddingGroup("1", "1", "Please add John");
+		InitiateAddingGroup("1", "1", "Please add John");
+		ConfirmFriendship();
+		SearchForUser("John 2");
+		sendMessageToUser("2");
+		LogOut();
+		Login("2", "cbcb");
+		
+		displayNewMessages();
+		topMessages(2, 2);
+		ThreeDegrees("1", "4");
+		ThreeDegrees("1", "5");
+		ThreeDegrees("4", "2");
 
-		//SearchForUser("John 2");
-
-		//sendMessageToUser("2");
-
-		// ThreeDegrees("1", "4");
-		// ThreeDegrees("1", "5");
-		// ThreeDegrees("4", "2");
-
+		dropUser(2);
 		LogOut();
 
 	}
+
 
 	public static void createUser(String name, String email, String pass, java.sql.Date dateOfBirth){
 		/* WORKING EXAMPLE
@@ -229,7 +234,7 @@ public class FaceSpace{
 			}
 
 			//get pendingGroupMembers where myId in groupMembership and role="manager"
-			query = "SELECT * FROM (SELECT * FROM (SELECT * FROM groupMembership WHERE userid=" + myId + " AND role='manager') g JOIN pendingGroupMembers p ON g.gid=p.gid) n JOIN profile f ON userId=f.userId";
+			query = "SELECT * FROM pendinggroupmembers WHERE gid IN (SELECT gid FROM groupMembership WHERE userid='" + myId + "' AND role='manager')";
 			pstmt = conn.prepareStatement(query);
 			rs = pstmt.executeQuery();
 			System.out.println("Here are all of your following group requests: ");
@@ -238,8 +243,16 @@ public class FaceSpace{
 			ArrayList<String> gFromIds = new ArrayList<String>();
 			ArrayList<String> gMessages = new ArrayList<String>();
 			int groupStart = i;
+			/*ResultSetMetaData md = rs.getMetaData();
+			int mcnt = md.getColumnCount();
+			String colName[] = new String[mcnt];
+			for(int z = 1; z <= mcnt; z++){
+				colName[z-1]=md.getColumnLabel(z);
+				System.out.println(colName[z-1]);
+			}*/
 			while(rs.next()){
-				System.out.println(i + ": Group " + rs.getString("gid") + ", " + rs.getString("name") + " (" + rs.getString("userId") + "), " + rs.getString("message"));
+				//System.out.println(rs.getStatement());
+				System.out.println(i + ": Group " + rs.getString("gid") + ", user id: " + rs.getString("userId") + ", message: " + rs.getString("message"));
 				gids.add(rs.getString("gid"));
 				gFromIds.add(rs.getString("userId"));
 				gMessages.add(rs.getString("message"));
@@ -300,6 +313,7 @@ public class FaceSpace{
 				System.out.println("Error: "+se.toString());
 				se = se.getNextException();
 			}
+			//se.printStackTrace();
 		}
 	}
 
