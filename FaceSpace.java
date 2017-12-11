@@ -58,7 +58,7 @@ public class FaceSpace{
 			e.printStackTrace();
 		}
 
-		//TestFunctions();
+		TestFunctions();
 
 		//scan.close();
 	}
@@ -86,7 +86,7 @@ public class FaceSpace{
 		InitiateFriendship("4");
 		Login("4", "cbcb");
 		ConfirmFriendship();
-		
+
 		DisplayFriends();
 
 		CreateGroup("BFFs4EVA", "5", "We r tha best!");
@@ -97,7 +97,7 @@ public class FaceSpace{
 		sendMessageToUser("2");
 		LogOut();
 		Login("2", "cbcb");
-		
+
 		displayNewMessages();
 		topMessages(2, 2);
 		ThreeDegrees("1", "4");
@@ -691,14 +691,8 @@ public class FaceSpace{
 	*/
 	public static void topMessages(int k, int x){
 		try {
-		String query = "SELECT * FROM (SELECT toUserID, COUNT(toUserID) AS numMessages FROM messages WHERE dateSent >= ? GROUP BY toUserID ORDER BY numMessages DESC) WHERE rownum <= "+ k;
+		String query = "SELECT * FROM (SELECT toUserID, COUNT(toUserID) AS numMessages FROM messages WHERE dateSent >= add_months(SYSDATE, -"+ Integer.toString(x) +") GROUP BY toUserID ORDER BY numMessages DESC) WHERE rownum <= "+ k;
 		PreparedStatement pstmt = conn.prepareStatement(query);
-
-		Calendar currentDate = Calendar.getInstance();
-		currentDate.add(Calendar.MONTH, -x);
-		java.sql.Date date = new java.sql.Date(currentDate.get(Calendar.YEAR), currentDate.get(Calendar.MONTH), currentDate.get(Calendar.DATE));
-
-		pstmt.setDate(1, date);
 
 		ResultSet rs = pstmt.executeQuery();
 
