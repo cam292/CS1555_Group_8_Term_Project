@@ -81,11 +81,11 @@ public class FSDriver {
 			} else if (input.equals("6")){
 				System.out.println("Please enter the id of the user you'd like to send a message to:");
 				String id = scan.nextLine();
-				FaceSpace.sendMessageToUser(id);
+				FaceSpace.sendMessageToUser(String.valueOf(id));
 			} else if (input.equals("7")){
 				System.out.println("Please enter the id of the group you'd like to send a message to:");
 				String id = scan.nextLine();
-				FaceSpace.sendMessageToGroup(id);
+				FaceSpace.sendMessageToGroup(String.valueOf(id));
 			} else if (input.equals("8")){
 				FaceSpace.displayMessages();
 			} else if (input.equals("9")){

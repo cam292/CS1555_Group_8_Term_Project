@@ -11,11 +11,11 @@ public class FaceSpace{
 	static Connection conn = null;
 
 	//  Database credentials
-	static final String USER = "dpd30";
- 	static final String PASS = "3924808"; //please don't steal this lol
+	// static final String USER = "dpd30";
+ 	// static final String PASS = "3924808"; //please don't steal this lol
 
-	//static final String USER = "cam292";
-  	//static final String PASS = "3917160"; //please don't steal this lol
+	static final String USER = "cam292";
+	static final String PASS = "3917160"; //please don't steal this lol
 
 	// Other variables
 	//static int profileIndex = 1;	//migrated to getting index at runtime
@@ -116,6 +116,7 @@ public class FaceSpace{
 			e.printStackTrace();
 		}
 		*/
+		System.out.println("Creating user");
 		String timeStamp = "TO_TIMESTAMP('" + new SimpleDateFormat("dd-MMM-yy:HH:mm").format(new java.util.Date()) + "', 'DD-MON-YY:HH24:MI')";
 		String birth = "TO_DATE('" + new SimpleDateFormat("MMM-dd-yy").format(dateOfBirth) + "', 'MON-DD-YY')";
 		String query = "INSERT INTO profile VALUES( ? , ? , ? , ? , " + birth + " , " + timeStamp + " )"; //this is safe since an sql date has to be passed in, not a string
@@ -123,10 +124,12 @@ public class FaceSpace{
 			PreparedStatement pstmt = conn.prepareStatement(query);
 
 			int index = 0;
+			System.out.println("Getting max userID");
 			PreparedStatement cntstmnt = conn.prepareStatement("SELECT MAX(userid) AS cnt FROM profile");
 			ResultSet cntSet = cntstmnt.executeQuery();
 			while(cntSet.next()){
 				index = cntSet.getInt("cnt") + 1;
+				System.out.println("next id: "+index);
 			}
 			pstmt.setString(1, Integer.toString(index));
 			pstmt.setString(2, name);
@@ -427,10 +430,14 @@ public class FaceSpace{
 		//get name of user to send message to
 
 		int index = 0;
-		PreparedStatement cntstmnt = conn.prepareStatement("SELECT MAX(msgid) AS cnt FROM messages");
+		PreparedStatement cntstmnt = conn.prepareStatement("SELECT MAX(msgID) AS cnt FROM messages");
 		ResultSet cntSet = cntstmnt.executeQuery();
 		while(cntSet.next()){
-			index = cntSet.getInt("cnt") + 1;
+			index = cntSet.getInt("cnt");
+			if(index !=0){
+				index += 1;
+			}
+			System.out.println(index);
 		}
 
 		String query = "SELECT name FROM profile WHERE userID='"+toId+"'";
@@ -446,26 +453,20 @@ public class FaceSpace{
 
 		String message = scan.nextLine();
 		String timestamp = "TO_TIMESTAMP('" + new SimpleDateFormat("dd-MMM-yy:HH:mm").format(new java.util.Date()) + "', 'DD-MON-YY:HH24:MI')";
-		//String timeStamp = "TO_TIMESTAMP('" + new SimpleDateFormat("dd-MMM-yy:HH:mm").format(new java.util.Date()) + "', 'DD-MON-YY:HH24:MI')";
-		query = "INSERT INTO messages VALUES(?, ?, ?, ?, ?, " + timestamp + ")";
-		//System.out.println("INSERT INTO MESSAGES VALUES(" + Integer.toString(index) + ", " + myId + ", "+ message + ", " + toId +", NULL, " + timeStamp);
+
+		query = "INSERT INTO messages VALUES(?, ?, ?, ?, NULL, " + timestamp + ")";
+
 		pstmt = conn.prepareStatement(query);
 		pstmt.setString(1, Integer.toString(index));
 		pstmt.setString(2, myId);
 		pstmt.setString(3, message);
 		pstmt.setString(4, toId);
-		pstmt.setString(5, "NULL");
-		/*pstmt.setString(1, "100");
-		pstmt.setString(2, "1");
-		pstmt.setString(3, "hey");
-		pstmt.setString(4, "2");
-		pstmt.setString(5, "NULL");*/
-		//pstmt.setString(6, timestamp);
 		pstmt.executeUpdate();
 		System.out.println("Message sent successfully!");
 		} catch(SQLException e1){
 			while(e1 != null){
-				System.out.println("Error: "+e1.toString());
+				// System.out.println("Error: "+e1.toString());
+				e1.printStackTrace();
 				e1 = e1.getNextException();
 			}
 		}

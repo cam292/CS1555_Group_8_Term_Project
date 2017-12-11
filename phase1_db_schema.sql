@@ -58,7 +58,7 @@ CREATE TABLE messages(
 CREATE TABLE messageRecipient(
   msgID varchar2(20) NOT NULL NOT DEFERRABLE,
   userID varchar2(20),
-  CONSTRAINT messageRecipient_PK PRIMARY KEY (msgID) INITIALLY IMMEDIATE, --Can't duplicate msgIDs
+  CONSTRAINT messageRecipient_PK PRIMARY KEY (msgID,userID) INITIALLY IMMEDIATE, --
   CONSTRAINT messageRecipient_FK1 FOREIGN KEY (msgID) REFERENCES messages(msgID) INITIALLY IMMEDIATE, --Must be an existing msgID in messages in order to add to this table
   CONSTRAINT messageRecipient_FK2 FOREIGN KEY (userID) REFERENCES profile(userID) INITIALLY IMMEDIATE --Must be an existing profile in order to be a recipient
 );
@@ -98,17 +98,13 @@ CREATE TABLE pendingGroupmembers(
 -----TRIGGERS
 --After a message is sent, if it is sent to a single user (not a group), then add that user to the messageRecipient table.
 CREATE OR REPLACE TRIGGER recipientsTrigger
-AFTER INSERT ON messages
-FOR EACH ROW
-BEGIN
+    AFTER INSERT ON messages
+    FOR EACH ROW
+  BEGIN
     IF :new.toUserID IS NOT NULL THEN
-    INSERT INTO messageRecipient VALUES
-        (
-            :new.msgID,
-            :new.toUserID
-        );
+      INSERT INTO messageRecipient VALUES(:new.msgID, :new.toUserID);
     END IF;
-END;
+  END;
 /
 
 --After a message is sent, if it is sent to a group (not a single user), then add all users in that group to the messageRecipient table.
