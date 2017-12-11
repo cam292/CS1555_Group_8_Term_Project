@@ -58,7 +58,7 @@ public class FaceSpace{
 			e.printStackTrace();
 		}
 
-		TestFunctions();
+		//TestFunctions();
 
 		//scan.close();
 	}
@@ -129,7 +129,7 @@ public class FaceSpace{
 			PreparedStatement pstmt = conn.prepareStatement(query);
 
 			int index = 0;
-			System.out.println("Getting max userID");
+			//System.out.println("Getting max userID");
 			PreparedStatement cntstmnt = conn.prepareStatement("SELECT MAX(userid) AS cnt FROM profile");
 			ResultSet cntSet = cntstmnt.executeQuery();
 			while(cntSet.next()){
