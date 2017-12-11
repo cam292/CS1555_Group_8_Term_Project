@@ -48,7 +48,7 @@ public class FSDriver {
 
 		while(loggedIn){
 
-			System.out.println("Hello! Please select an option from the menu:\n\t1 Initiate Friendship\n\t2 Confirm Friendship\n\t3 Display Friends\n\t4 Create Group\n\t5 Add to Group\n\t6 Message User\n\t7 Message Group\n\t8 Display Messages\n\t9 Display New Messages\n\t10 Search for User\n\t11 Find Friendship Path\n\t99 Delete Profile\n\t0 Log out");
+			System.out.println("Hello! Please select an option from the menu:\n\t1 Initiate Friendship\n\t2 Confirm Friendship\n\t3 Display Friends\n\t4 Create Group\n\t5 Add to Group\n\t6 Message User\n\t7 Message Group\n\t8 Display Messages\n\t9 Display New Messages\n\t10 Top (k) users with most messages received over (x) months\n\t11 Search for User\n\t12 Find Friendship Path\n\t99 Delete Profile\n\t0 Log out");
 			String input = scan.nextLine();
 			if(input.equals("0")){
 				FaceSpace.LogOut();
@@ -91,11 +91,17 @@ public class FSDriver {
 			} else if (input.equals("9")){
 				FaceSpace.displayNewMessages();
 			} else if (input.equals("10")){
+				System.out.println("Enter the (k) users you'd like to display:");
+				String k = scan.nextLine();
+				System.out.println("Enter the past (x) months you'd like to search:");
+				String x = scan.nextLine();
+				FaceSpace.topMessages(Integer.parseInt(k), Integer.parseInt(x));
+			}else if (input.equals("11")){
 				System.out.println("Please enter the search query:");
 				String query = scan.nextLine();
 				System.out.println();
 				FaceSpace.SearchForUser(query);
-			} else if (input.equals("11")){
+			} else if (input.equals("12")){
 				System.out.println("Please enter the id of the user you'd like to start from:");
 				String id1 = scan.nextLine();
 				System.out.println("Please enter the id of the user you'd like to end at:");
