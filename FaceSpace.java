@@ -677,7 +677,7 @@ public class FaceSpace{
 	*/
 	public static void topMessages(int k, int x){
 		try {
-		String query = "SELECT * FROM (SELECT *, COUNT(toUserID) AS numMessages FROM messages WHERE dateSent >= ? GROUP BY toUserID ORDER BY numMessages ASC) WHERE rownum <= "+ k +" ORDER BY rownum";
+		String query = "SELECT * FROM (SELECT toUserID, COUNT(toUserID) AS numMessages FROM messages WHERE dateSent >= ? GROUP BY toUserID ORDER BY numMessages DESC) WHERE rownum <= "+ k;
 		PreparedStatement pstmt = conn.prepareStatement(query);
 
 		Calendar currentDate = Calendar.getInstance();

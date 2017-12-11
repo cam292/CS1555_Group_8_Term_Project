@@ -96,28 +96,21 @@ CREATE TABLE pendingGroupmembers(
 );
 
 -----TRIGGERS
---After a message is sent, if it is sent to a single user (not a group), then add that user to the messageRecipient table.
-CREATE OR REPLACE TRIGGER recipientsTrigger
-    AFTER INSERT ON messages
-    FOR EACH ROW
-  BEGIN
-    IF :new.toUserID IS NOT NULL THEN
-      INSERT INTO messageRecipient VALUES(:new.msgID, :new.toUserID);
-    END IF;
-  END;
-/
-
---After a message is sent, if it is sent to a group (not a single user), then add all users in that group to the messageRecipient table.
-CREATE OR REPLACE TRIGGER recipientsGroupTrigger
-AFTER INSERT ON messages
+--After a message is sent, if it is sent to a single user (not a group), then add that user to the messageRecipient table, if it is to a group, add each member to the table
+CREATE OR REPLACE TRIGGER messageRecipientsTrigger
+AFTER INSERT ON MESSAGES
 FOR EACH ROW
 BEGIN
-    IF :new.toGroupID IS NOT NULL THEN
-    INSERT INTO messageRecipient VALUES
-        (
-            :new.msgID,
-            (SELECT userID FROM groupMembership WHERE gID= :new.toGroupID)
-        );
+    IF :new.toGroupID IS NOT null THEN
+        FOR rec IN (SELECT *
+                    FROM groupMembership
+                    WHERE gID = :new.toGroupID)
+        LOOP
+            INSERT INTO MESSAGERECIPIENT values(:new.msgID, rec.userID);
+        END LOOP;
+    END IF;
+    IF :new.toUserID IS NOT null THEN
+        INSERT INTO MESSAGERECIPIENT values(:new.msgID, :new.toUserID);
     END IF;
 END;
 /
